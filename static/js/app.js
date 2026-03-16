@@ -52,7 +52,7 @@ function showScreen(id){
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='screen-history'){
     // Pull latest from Supabase before rendering history
-    if(window.Sync && Sync.isLoggedIn()){
+    if(typeof Sync!=='undefined'&&Sync.isLoggedIn()){
       Sync.pull().then(()=>renderHistory()).catch(()=>renderHistory());
     } else {
       renderHistory();
@@ -181,7 +181,7 @@ function saveResult(){
   localStorage.setItem('mq_history',JSON.stringify(history));
   showToast(window.t('final.saveOk'),'success');
   // Push to Supabase if logged in
-  if (window.Sync && Sync.isLoggedIn()) {
+  if (typeof Sync!=='undefined'&&Sync.isLoggedIn()) {
     Sync.push().catch(console.warn);
   }
   setTimeout(()=>showScreen('screen-home'),1600);
