@@ -19,7 +19,7 @@ function bindEvents(){
   document.getElementById('file-input')?.addEventListener('change',handleFileUpload);
   document.getElementById('quiz-back')?.addEventListener('click',()=>{if(confirm(window.t('quiz.exitMsg')))showScreen('screen-home')});
   document.getElementById('next-btn')?.addEventListener('click',nextQuestion);
-  document.getElementById('save-btn')?.addEventListener('click',saveResult);
+  document.getElementById('save-btn')?.addEventListener('click',()=>saveResult());
   document.getElementById('final-new-btn')?.addEventListener('click',()=>showScreen('screen-home'));
   document.getElementById('history-back')?.addEventListener('click',()=>showScreen('screen-home'));
   document.getElementById('clear-btn')?.addEventListener('click',clearHistory);
