@@ -13,6 +13,15 @@
     <p class="home-tagline" data-i18n="home.tagline">Simulados para Residência Médica</p>
   </div>
 
+
+  <!-- Sync pill -->
+  <div id="sync-pill" class="sync-pill" onclick="document.getElementById('sync-modal')?.classList.remove('hidden')">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+    <span>Sync</span>
+  </div>
+
   <!-- Screen: Home -->
   <div id="screen-home" class="screen active">
 
@@ -165,4 +174,22 @@
   </div><!-- /screen-history -->
 
 </div><!-- /home-inner -->
+
+<script>
+// Hook saveResult to auto-push after saving
+document.addEventListener('DOMContentLoaded', function() {
+  var orig = window.saveResult;
+  if (typeof orig === 'function') {
+    window.saveResult = async function() {
+      orig();
+      setTimeout(function() {
+        if (window.Sync && Sync.isLoggedIn()) {
+          Sync.push().catch(console.warn);
+        }
+      }, 1800); // after the redirect delay in saveResult
+    };
+  }
+});
+</script>
+
 {{ end }}

@@ -207,3 +207,49 @@ h3{font-size:1.05rem;font-weight:600}
 @media(max-width:480px){
   .nav-link{padding:5px 8px;font-size:.78rem}
 }
+/* ── SYNC ─────────────────────────────────────────────── */
+.sync-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-size: .8125rem;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  background: var(--bg-surface);
+  transition: all .2s var(--ease);
+  align-self: center;
+  margin: 0 auto;
+}
+.sync-pill:hover { border-color: var(--accent); color: var(--accent); }
+
+.sync-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(4px);
+  z-index: 490;
+  animation: fadeIn .2s var(--ease);
+}
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+.sync-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 500;
+  width: min(420px, calc(100vw - 32px));
+  box-shadow: var(--sh-lg);
+  animation: dialogIn .3s var(--spring);
+}
+@keyframes dialogIn {
+  from { opacity: 0; transform: translate(-50%, -48%) scale(.95); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+#sync-modal.hidden { display: none; }
+#sync-modal:not(.hidden) { display: block; }
