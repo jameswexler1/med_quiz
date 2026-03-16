@@ -286,16 +286,22 @@ let deferredPrompt=null;
 function initInstallBanner(){
   window.addEventListener('beforeinstallprompt',e=>{
     e.preventDefault();deferredPrompt=e;
-    if(localStorage.getItem('mq_install_dismissed'))return;
+    // Don't show if already installed
+    if(window.matchMedia('(display-mode: standalone)').matches) return;
+    // Don't show if dismissed within the last 2 days
+    const dismissed = localStorage.getItem('mq_install_dismissed');
+    if(dismissed && Date.now() - parseInt(dismissed) < 2*24*60*60*1000) return;
     document.getElementById('install-banner')?.classList.remove('hidden');
   });
   document.getElementById('install-btn')?.addEventListener('click',()=>{
     document.getElementById('install-banner')?.classList.add('hidden');
     deferredPrompt?.prompt();
+    localStorage.removeItem('mq_install_dismissed');
   });
   document.getElementById('install-dismiss')?.addEventListener('click',()=>{
     document.getElementById('install-banner')?.classList.add('hidden');
-    localStorage.setItem('mq_install_dismissed','1');
+    // Store timestamp instead of '1' so it resets after 2 days
+    localStorage.setItem('mq_install_dismissed', Date.now().toString());
   });
 }
 
