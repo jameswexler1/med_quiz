@@ -86,7 +86,12 @@ function loadQuiz(){
   if(!Array.isArray(data)||!data.length||!data[0].title||!Array.isArray(data[0].choices)||data[0].correctIndex===undefined){
     showToast(window.t('home.jsonErr'),'error');return
   }
-  State.original=data;State.questions=shuffleArray(data);State.current=0;State.score=0;State.answers=[];
+  State.original=data;
+  State.questions=shuffleArray(data).map(q=>{
+    const correct=q.choices[q.correctIndex];
+    const choices=shuffleArray(q.choices);
+    return {...q,choices,correctIndex:choices.indexOf(correct)};
+  });State.current=0;State.score=0;State.answers=[];
   showScreen('screen-quiz');renderQuestion();
 }
 
@@ -287,8 +292,12 @@ function redoQuiz(historyIdx) {
     );
     return;
   }
-  State.original    = entry.questions;
-  State.questions   = shuffleArray(entry.questions);
+  State.original=entry.questions;
+  State.questions=shuffleArray(entry.questions).map(q=>{
+    const correct=q.choices[q.correctIndex];
+    const choices=shuffleArray(q.choices);
+    return {...q,choices,correctIndex:choices.indexOf(correct)};
+  });
   State.current     = 0;
   State.score       = 0;
   State.answers     = [];
