@@ -73,6 +73,11 @@ function handleFileUpload(e){
 }
 
 /* LOAD */
+function shuffleArray(a){
+  a=a.slice();
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
 function loadQuiz(){
   const raw=(document.getElementById('json-input')?.value||'').trim();
   if(!raw){showToast(window.t('home.emptyErr'),'error');return}
@@ -81,7 +86,7 @@ function loadQuiz(){
   if(!Array.isArray(data)||!data.length||!data[0].title||!Array.isArray(data[0].choices)||data[0].correctIndex===undefined){
     showToast(window.t('home.jsonErr'),'error');return
   }
-  State.original=data;State.questions=(function(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;})(data);State.current=0;State.score=0;State.answers=[];
+  State.original=data;State.questions=shuffleArray(data);State.current=0;State.score=0;State.answers=[];
   showScreen('screen-quiz');renderQuestion();
 }
 
@@ -177,7 +182,19 @@ function saveResult(){
   const locale=window.MQ_LANG==='pt'?'pt-BR':'en-US';
   const name=(document.getElementById('quiz-name-input')?.value||'').trim()||`Quiz ${new Date().toLocaleDateString(locale)}`;
   const history=getHistory();
-  history.push({id:Date.now(),name,date:new Date().toLocaleString(locale),score:State.score,total:State.questions.length,percent:Math.round((State.score/State.questions.length)*100),questions:State.original||State.questions});
+  const questions=State.original||State.questions;
+  const total=questions.length;
+  const percent=Math.round((State.score/total)*100);
+  const date=new Date().toLocaleString(locale);
+  if(State.redoId){
+    const idx=history.findIndex(h=>h.id===State.redoId);
+    if(idx>=0){
+      history[idx]={...history[idx],score:State.score,total,percent,date};
+    }
+    State.redoId=null;State.redoName=null;
+  } else {
+    history.push({id:Date.now(),name,date,score:State.score,total,percent,questions});
+  }
   localStorage.setItem('mq_history',JSON.stringify(history));
   showToast(window.t('final.saveOk'),'success');
   // Push to Supabase if logged in
@@ -270,10 +287,13 @@ function redoQuiz(historyIdx) {
     );
     return;
   }
-  State.questions = entry.questions;
-  State.current   = 0;
-  State.score     = 0;
-  State.answers   = [];
+  State.original    = entry.questions;
+  State.questions   = shuffleArray(entry.questions);
+  State.current     = 0;
+  State.score       = 0;
+  State.answers     = [];
+  State.redoId      = entry.id;
+  State.redoName    = entry.name;
   showScreen('screen-quiz');
   renderQuestion();
 }
