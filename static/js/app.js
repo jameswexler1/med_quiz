@@ -239,7 +239,7 @@ function renderHistory(){
     const item=document.createElement('div');
     item.className='history-item';item.style.animationDelay=(i*45)+'ms';
     const pc=h.percent>=70?'var(--green)':h.percent>=50?'var(--yellow)':'var(--red)';
-    item.innerHTML=`<div class="history-item-info"><div class="history-item-name">${esc(h.name)}</div><div class="history-item-date">${h.date}</div></div><div class="history-item-score"><div class="history-score-num" style="color:${pc}">${h.score}/${h.total}</div><div class="history-score-pct">${h.percent}%</div></div><div style="display:flex;gap:6px;margin-left:8px;flex-shrink:0">${h.questions?`<button class="btn btn-secondary btn-sm share-history-btn" data-idx="${history.length-1-i}" aria-label="Share" title="Compartilhar / Share" style="padding:7px 10px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>`:""} ${h.questions?`<button class="btn btn-secondary btn-sm redo-btn" data-idx="${history.length-1-i}" aria-label="Redo" title="Refazer / Redo" style="padding:7px 10px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1 0 .49-4.98"/></svg></button>`:""}</div>`;
+    item.innerHTML=`<div class="history-item-info"><div class="history-item-name">${esc(h.name)}</div><div class="history-item-date">${h.date}</div></div><div class="history-item-score"><div class="history-score-num" style="color:${pc}">${h.score}/${h.total}</div><div class="history-score-pct">${h.percent}%</div></div><div style="position:relative;margin-left:8px;flex-shrink:0"><button class="btn btn-secondary btn-sm history-menu-btn" data-idx="${history.length-1-i}" style="padding:7px 10px;font-size:1.1rem;letter-spacing:.05em">···</button><div class="history-menu-dropdown hidden" data-idx="${history.length-1-i}">${h.questions?`<button class="history-menu-item redo-btn" data-idx="${history.length-1-i}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1 0 .49-4.98"/></svg><span>${window.MQ_LANG==='en'?'Redo':'Refazer'}</span></button>`:""} ${h.questions?`<button class="history-menu-item share-history-btn" data-idx="${history.length-1-i}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span>${window.MQ_LANG==='en'?'Share':'Compartilhar'}</span></button>`:""}<button class="history-menu-item delete-btn" data-idx="${history.length-1-i}" style="color:var(--red)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6m4-6v6"/><path d="M9,6V4h6v2"/></svg><span>${window.MQ_LANG==='en'?'Delete':'Excluir'}</span></button></div></div>`;
     list.appendChild(item);
   });
   renderHistoryChart(history);
@@ -321,13 +321,46 @@ function redoQuiz(historyIdx) {
   renderQuestion();
 }
 
-// Delegated click handler for dynamically rendered redo + share buttons
+// Delegated click handler for history item menus
 document.addEventListener('click', function(e) {
+  // Toggle ··· menu
+  const menuBtn = e.target.closest('.history-menu-btn');
+  if (menuBtn) {
+    e.stopPropagation();
+    const idx      = menuBtn.dataset.idx;
+    const dropdown = document.querySelector('.history-menu-dropdown[data-idx="'+idx+'"]');
+    // Close all other open menus
+    document.querySelectorAll('.history-menu-dropdown').forEach(d => {
+      if (d !== dropdown) d.classList.add('hidden');
+    });
+    dropdown.classList.toggle('hidden');
+    return;
+  }
+
+  // Close menus when clicking outside
+  if (!e.target.closest('.history-menu-dropdown')) {
+    document.querySelectorAll('.history-menu-dropdown').forEach(d => d.classList.add('hidden'));
+  }
+
   const redo = e.target.closest('.redo-btn');
-  if (redo) { redoQuiz(parseInt(redo.dataset.idx, 10)); return; }
+  if (redo) {
+    document.querySelectorAll('.history-menu-dropdown').forEach(d => d.classList.add('hidden'));
+    redoQuiz(parseInt(redo.dataset.idx, 10));
+    return;
+  }
 
   const share = e.target.closest('.share-history-btn');
-  if (share) { shareFromHistory(parseInt(share.dataset.idx, 10)); }
+  if (share) {
+    document.querySelectorAll('.history-menu-dropdown').forEach(d => d.classList.add('hidden'));
+    shareFromHistory(parseInt(share.dataset.idx, 10));
+    return;
+  }
+
+  const del = e.target.closest('.delete-btn');
+  if (del) {
+    document.querySelectorAll('.history-menu-dropdown').forEach(d => d.classList.add('hidden'));
+    deleteHistoryItem(parseInt(del.dataset.idx, 10));
+  }
 });
 
 /* ── SESSION PERSISTENCE ───────────────────────────────── */
@@ -558,4 +591,28 @@ async function shareFromHistory(historyIdx) {
     closeShareModal();
     showToast(isEn ? 'Could not generate link' : 'Erro ao gerar link', 'error');
   }
+}
+
+async function deleteHistoryItem(historyIdx) {
+  const isEn   = window.MQ_LANG === 'en';
+  const history = getHistory();
+  const entry  = history[historyIdx];
+  if (!entry) return;
+
+  const msg = isEn
+    ? 'Delete "' + entry.name + '"? This cannot be undone.'
+    : 'Excluir "' + entry.name + '"? Esta ação não pode ser desfeita.';
+  if (!confirm(msg)) return;
+
+  // Remove from local
+  history.splice(historyIdx, 1);
+  localStorage.setItem('mq_history', JSON.stringify(history));
+
+  // Push updated history to Supabase
+  if (typeof Sync !== 'undefined' && Sync.isLoggedIn()) {
+    Sync.push().catch(console.warn);
+  }
+
+  renderHistory();
+  showToast(isEn ? 'Deleted' : 'Excluído', 'success');
 }
