@@ -35,7 +35,7 @@
     </a>
     <div class="nav-controls">
       {{ block "nav-links" . }}
-      <a href="/" class="nav-link" data-i18n="nav.history"></a>
+      <button onclick="if(typeof showScreen!=='undefined')showScreen('screen-history')" class="nav-link" data-i18n="nav.history"></button>
       <a href="/prompt/" class="nav-link" data-i18n="nav.prompt"></a>
       {{ end }}
       <div class="lang-toggle" role="group" aria-label="Language">
