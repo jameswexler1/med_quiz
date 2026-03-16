@@ -341,32 +341,6 @@ document.addEventListener('click', function(e) {
   if (del) { closeHistoryMenu(); deleteHistoryItem(parseInt(del.dataset.idx,10)); }
 });
 
-  // Close menus when clicking outside
-  if (!e.target.closest('.history-menu-dropdown')) {
-    document.querySelectorAll('.history-menu-dropdown').forEach(d => d.classList.add('hidden'));
-  }
-
-  const redo = e.target.closest('.redo-btn');
-  if (redo) {
-    document.querySelectorAll('.history-menu-dropdown').forEach(d => d.classList.add('hidden'));
-    redoQuiz(parseInt(redo.dataset.idx, 10));
-    return;
-  }
-
-  const share = e.target.closest('.share-history-btn');
-  if (share) {
-    document.querySelectorAll('.history-menu-dropdown').forEach(d => d.classList.add('hidden'));
-    shareFromHistory(parseInt(share.dataset.idx, 10));
-    return;
-  }
-
-  const del = e.target.closest('.delete-btn');
-  if (del) {
-    document.querySelectorAll('.history-menu-dropdown').forEach(d => d.classList.add('hidden'));
-    deleteHistoryItem(parseInt(del.dataset.idx, 10));
-  }
-});
-
 /* ── SESSION PERSISTENCE ───────────────────────────────── */
 function saveSession() {
   const session = {
