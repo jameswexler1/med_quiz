@@ -629,32 +629,18 @@ function openHistoryMenu(btn) {
   const menu = document.createElement('div');
   menu.className = 'history-menu-dropdown';
   menu.innerHTML =
-    `<button class="history-menu-item rename-btn" data-idx="${idx}">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-      <span>${isEn?'Rename':'Renomear'}</span></button>` +
     (hasQuestions ? `<button class="history-menu-item redo-btn" data-idx="${idx}">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1 0 .49-4.98"/></svg>
       <span>${isEn?'Redo':'Refazer'}</span></button>` : '') +
     (hasQuestions ? `<button class="history-menu-item share-history-btn" data-idx="${idx}">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
       <span>${isEn?'Share':'Compartilhar'}</span></button>` : '') +
+    `<button class="history-menu-item rename-btn" data-idx="${idx}">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+      <span>${isEn?'Rename':'Renomear'}</span></button>` +
     `<button class="history-menu-item delete-btn" data-idx="${idx}" style="color:var(--red)">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6m4-6v6"/><path d="M9,6V4h6v2"/></svg>
       <span>${isEn?'Delete':'Excluir'}</span></button>`;
-
-  // Position below (or above) the button
-  document.body.appendChild(menu);
-  const rect   = btn.getBoundingClientRect();
-  const menuH  = menu.offsetHeight || 130;
-  const menuW  = menu.offsetWidth  || 160;
-  const top    = (window.innerHeight - rect.bottom > menuH)
-    ? rect.bottom + window.scrollY + 4
-    : rect.top    + window.scrollY - menuH - 4;
-  const left   = Math.min(rect.right - menuW, window.innerWidth - menuW - 8);
-
-  menu.style.top  = top  + 'px';
-  menu.style.left = left + 'px';
-
   _histMenuEl = menu;
 }
 
