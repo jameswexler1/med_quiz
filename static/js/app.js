@@ -127,7 +127,8 @@ function renderQuestion(){
   q.choices.forEach((choice,i)=>{
     const btn=document.createElement('button');
     btn.className='choice-btn';
-    btn.innerHTML=`<span class="choice-letter">${letters[i]||i+1}</span><span>${esc(choice)}</span>`;
+    var choiceText = choice.replace(/^[A-Ea-e][.)\]\s]+/, '').trim();
+    btn.innerHTML=`<span class="choice-letter">${letters[i]||i+1}</span><span>${esc(choiceText)}</span>`;
     btn.addEventListener('click',()=>handleAnswer(i));
     container.appendChild(btn);
   });
@@ -339,6 +340,8 @@ document.addEventListener('click', function(e) {
   closeHistoryMenu();
 
   // These still work via the floating menu buttons
+  const ren = e.target.closest('.rename-btn');
+  if (ren) { closeHistoryMenu(); renameHistoryItem(parseInt(ren.dataset.idx,10)); return; }
   const redo = e.target.closest('.redo-btn');
   if (redo) { closeHistoryMenu(); redoQuiz(parseInt(redo.dataset.idx,10)); return; }
   const share = e.target.closest('.share-history-btn');
@@ -617,6 +620,9 @@ function openHistoryMenu(btn) {
   const menu = document.createElement('div');
   menu.className = 'history-menu-dropdown';
   menu.innerHTML =
+    `<button class="history-menu-item rename-btn" data-idx="${idx}">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+      <span>${isEn?'Rename':'Renomear'}</span></button>` +
     (hasQuestions ? `<button class="history-menu-item redo-btn" data-idx="${idx}">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1 0 .49-4.98"/></svg>
       <span>${isEn?'Redo':'Refazer'}</span></button>` : '') +
@@ -716,7 +722,7 @@ function parseSimpleText(raw) {
     }
 
     // Explanation
-    var isExplain = isEn ? /^explanation:/i.test(line) : /^explicac/i.test(line);
+    var isExplain = isEn ? /^explanation:/i.test(line) : /^explic/i.test(line);
     if (isExplain) {
       inExplain = true;
       var rest = line.replace(/^[^:]+:\s*/, '').trim();
@@ -756,3 +762,22 @@ function loadFromText() {
   renderQuestion();
 }
 
+
+async function renameHistoryItem(historyIdx) {
+  var isEn    = window.MQ_LANG === 'en';
+  var history = getHistory();
+  var entry   = history[historyIdx];
+  if (!entry) return;
+  var msg = isEn ? 'New name:' : 'Novo nome:';
+  var newName = prompt(msg, entry.name);
+  if (newName === null) return;
+  newName = newName.trim();
+  if (!newName) return;
+  history[historyIdx].name = newName;
+  localStorage.setItem('mq_history', JSON.stringify(history));
+  if (typeof Sync !== 'undefined' && Sync.isLoggedIn()) {
+    Sync.push().catch(console.warn);
+  }
+  renderHistory();
+  showToast(isEn ? 'Renamed' : 'Renomeado', 'success');
+}
