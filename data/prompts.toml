@@ -1,0 +1,85 @@
+# ═══════════════════════════════════════════════════════
+#  MedQuiz — AI Prompts
+#  Edit the prompt text freely between the triple quotes.
+#  After editing: push to Netlify or run `hugo --minify`
+# ═══════════════════════════════════════════════════════
+
+[pt]
+label = "🇧🇷 Residência Médica (BR)"
+prompt = """Você é um especialista em provas de residência médica brasileira (USP, UNIFESP, ENARE, SUS-SP, AMRIGS etc.).
+Gere um array JSON EXATAMENTE no formato solicitado abaixo, sempre em bloco de código copiável, sem qualquer texto antes ou depois.
+
+TEMA(S): [cole aqui]
+NÍVEL DE DETALHAMENTO: [básico/intermediário/alto/extremamente detalhado]
+NÚMERO DE QUESTÕES: [cole aqui]
+FONTE PRINCIPAL PARA EMBASAMENTO: [ANEXO(S) / INTERNET / ANEXO(S) + INTERNET]
+REFERÊNCIAS PRIORITÁRIAS: [cole aqui]
+
+Regras obrigatórias:
+- Gere EXATAMENTE o número solicitado de questões.
+- O output deve ser SOMENTE um array JSON válido, dentro de bloco de código.
+- Cada questão deve ser um objeto com EXATAMENTE estas chaves: "title", "choices", "correctIndex", "explanation".
+- "title": caso clínico detalhado, longo, complexo, em estilo prova de residência.
+- "choices": array de EXATAMENTE 4 alternativas, neste formato:
+  ["A) ...", "B) ...", "C) ...", "D) ..."]
+- "correctIndex": inteiro de 0 a 3.
+- "explanation": explicação longa, técnica, completa, com raciocínio clínico, justificando a correta e refutando as incorretas, baseada em diretrizes e referências atualizadas.
+- As alternativas devem ser plausíveis e com distratores fortes.
+- Não escreva introdução.
+- Não escreva conclusão.
+- Não escreva comentários fora do JSON.
+- Não use nenhum formato diferente do solicitado.
+- O JSON deve ser válido.
+
+Formato exato:
+[
+  {
+    "title": "...",
+    "choices": ["A) ...", "B) ...", "C) ...", "D) ..."],
+    "correctIndex": 0,
+    "explanation": "..."
+  }
+]
+
+Agora gere as questões."""
+
+[en]
+label = "🇺🇸 USMLE (Step 1 / Step 2 CK)"
+prompt = """You are an expert in USMLE Step 1 and Step 2 CK question writing, with deep knowledge of NBME style, First Aid, Pathoma, Sketchy, and UpToDate.
+Generate a JSON array EXACTLY in the format specified below, always in a copyable code block, with no text before or after.
+
+TOPIC(S): [paste here]
+DETAIL LEVEL: [basic/intermediate/high/extremely detailed]
+TARGET EXAM: [Step 1 / Step 2 CK / both]
+NUMBER OF QUESTIONS: [paste here]
+PRIMARY SOURCE: [ATTACHMENT(S) / INTERNET / ATTACHMENT(S) + INTERNET]
+PRIORITY REFERENCES: [paste here]
+
+Mandatory rules:
+- Generate EXACTLY the requested number of questions.
+- Output ONLY a valid JSON array, inside a code block.
+- Each question must be an object with EXACTLY these keys: "title", "choices", "correctIndex", "explanation".
+- "title": a detailed, lengthy clinical vignette in authentic USMLE style — include patient age, sex, presenting complaint, history, vitals, physical exam findings, and relevant labs/imaging. End with a clear stem question.
+- "choices": array of EXACTLY 4 answer choices, in this format:
+  ["A) ...", "B) ...", "C) ...", "D) ..."]
+- "correctIndex": integer from 0 to 3.
+- "explanation": long, technical, complete explanation with clinical reasoning — justify the correct answer and explicitly refute each wrong answer, referencing current guidelines and pathophysiology. Include the classic teaching point or buzzword association when relevant.
+- Distractors must be plausible and based on common USMLE traps (e.g. related drug, next best step vs. diagnosis, mechanism confusion).
+- Write in the style of NBME/USMLE question banks (UWorld, Amboss).
+- Do not write any introduction.
+- Do not write any conclusion.
+- Do not write any comments outside the JSON.
+- Do not use any format other than the one specified.
+- The JSON must be valid.
+
+Exact format:
+[
+  {
+    "title": "...",
+    "choices": ["A) ...", "B) ...", "C) ...", "D) ..."],
+    "correctIndex": 0,
+    "explanation": "..."
+  }
+]
+
+Now generate the questions."""
