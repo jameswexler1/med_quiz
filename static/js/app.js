@@ -340,27 +340,6 @@ document.addEventListener('click', function(e) {
   const del = e.target.closest('.delete-btn');
   if (del) { closeHistoryMenu(); deleteHistoryItem(parseInt(del.dataset.idx,10)); }
 });
-    if (dropdown.classList.contains('hidden')) {
-      // Position the dropdown relative to the button using viewport coords
-      const rect = menuBtn.getBoundingClientRect();
-      const menuH = 150; // approximate dropdown height
-      const spaceBelow = window.innerHeight - rect.bottom;
-      if (spaceBelow < menuH) {
-        // open upward
-        dropdown.style.top  = (rect.top - menuH + window.scrollY) + 'px';
-      } else {
-        dropdown.style.top  = (rect.bottom + 4 + window.scrollY) + 'px';
-      }
-      // Align right edge with button right edge
-      const right = window.innerWidth - rect.right;
-      dropdown.style.right = right + 'px';
-      dropdown.style.left  = 'auto';
-      dropdown.classList.remove('hidden');
-    } else {
-      dropdown.classList.add('hidden');
-    }
-    return;
-  }
 
   // Close menus when clicking outside
   if (!e.target.closest('.history-menu-dropdown')) {
