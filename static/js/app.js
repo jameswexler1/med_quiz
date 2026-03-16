@@ -81,7 +81,7 @@ function loadQuiz(){
   if(!Array.isArray(data)||!data.length||!data[0].title||!Array.isArray(data[0].choices)||data[0].correctIndex===undefined){
     showToast(window.t('home.jsonErr'),'error');return
   }
-  State.original=data;State.questions=data.slice().sort(()=>Math.random()-.5);State.current=0;State.score=0;State.answers=[];
+  State.original=data;State.questions=(function(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;})(data);State.current=0;State.score=0;State.answers=[];
   showScreen('screen-quiz');renderQuestion();
 }
 
