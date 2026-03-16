@@ -7,7 +7,14 @@ document.addEventListener('DOMContentLoaded',()=>{
   registerSW();
   initInstallBanner();
   bindEvents();
-  if(document.getElementById('screen-home')){showScreen('screen-home');checkResumeBanner();}
+  // Check for shared quiz link
+  const _shareId = new URLSearchParams(window.location.search).get('share');
+  if(_shareId){
+    handleSharedLink(_shareId);
+  } else if(document.getElementById('screen-home')){
+    showScreen('screen-home');
+    checkResumeBanner();
+  }
 });
 
 function bindEvents(){
@@ -21,6 +28,11 @@ function bindEvents(){
   document.getElementById('next-btn')?.addEventListener('click',nextQuestion);
   document.getElementById('save-btn')?.addEventListener('click',()=>saveResult());
   document.getElementById('final-new-btn')?.addEventListener('click',()=>showScreen('screen-home'));
+  document.getElementById('share-btn')?.addEventListener('click',openShareModal);
+  document.getElementById('share-backdrop')?.addEventListener('click',closeShareModal);
+  document.getElementById('share-close-btn')?.addEventListener('click',closeShareModal);
+  document.getElementById('share-generate-btn')?.addEventListener('click',generateShareLink);
+  document.getElementById('share-copy-btn')?.addEventListener('click',copyShareLink);
   document.getElementById('history-back')?.addEventListener('click',()=>showScreen('screen-home'));
   document.getElementById('clear-btn')?.addEventListener('click',clearHistory);
   document.getElementById('json-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey))loadQuiz()});
@@ -404,4 +416,107 @@ function checkResumeBanner() {
     clearSession();
     banner.classList.add('hidden');
   };
+}
+
+/* ── SHARE UI ───────────────────────────────────────────── */
+function openShareModal() {
+  const isEn = window.MQ_LANG === 'en';
+  document.getElementById('share-modal-title').textContent =
+    isEn ? 'Share Quiz' : 'Compartilhar Quiz';
+  document.getElementById('share-modal-sub').textContent =
+    isEn ? 'Anyone with the link can take this quiz.' : 'Qualquer pessoa com o link pode fazer este simulado.';
+  document.getElementById('share-generate-label').textContent =
+    isEn ? 'Generate link' : 'Gerar link';
+  document.getElementById('share-copy-label').textContent =
+    isEn ? 'Copy link' : 'Copiar link';
+  // Reset state
+  document.getElementById('share-link-wrap').classList.add('hidden');
+  document.getElementById('share-generate-btn').classList.remove('hidden');
+  document.getElementById('share-modal').classList.remove('hidden');
+}
+
+function closeShareModal() {
+  document.getElementById('share-modal').classList.add('hidden');
+}
+
+async function generateShareLink() {
+  const isEn  = window.MQ_LANG === 'en';
+  const btn   = document.getElementById('share-generate-btn');
+  const label = document.getElementById('share-generate-label');
+  const name  = (document.getElementById('quiz-name-input')?.value || '').trim()
+    || (isEn ? 'Shared Quiz' : 'Quiz Compartilhado');
+
+  btn.disabled  = true;
+  label.textContent = isEn ? 'Generating…' : 'Gerando…';
+
+  try {
+    const questions = State.original || State.questions;
+    const url = await window.shareQuiz(name, questions);
+    document.getElementById('share-link-input').value = url;
+    document.getElementById('share-link-wrap').classList.remove('hidden');
+    btn.classList.add('hidden');
+  } catch(e) {
+    showToast(isEn ? 'Could not generate link' : 'Erro ao gerar link', 'error');
+    btn.disabled = false;
+    label.textContent = isEn ? 'Generate link' : 'Gerar link';
+  }
+}
+
+function copyShareLink() {
+  const url   = document.getElementById('share-link-input').value;
+  const isEn  = window.MQ_LANG === 'en';
+  const label = document.getElementById('share-copy-label');
+  navigator.clipboard.writeText(url).then(() => {
+    label.textContent = '✓ ' + (isEn ? 'Copied!' : 'Copiado!');
+    setTimeout(() => {
+      label.textContent = isEn ? 'Copy link' : 'Copiar link';
+    }, 2000);
+  }).catch(() => {
+    document.getElementById('share-link-input').select();
+    document.execCommand('copy');
+    label.textContent = '✓';
+    setTimeout(() => { label.textContent = isEn ? 'Copy link' : 'Copiar link'; }, 2000);
+  });
+}
+
+async function handleSharedLink(id) {
+  const isEn = window.MQ_LANG === 'en';
+  // Show home screen with loading state
+  if(document.getElementById('screen-home')) showScreen('screen-home');
+
+  // Show a loading toast
+  showToast(isEn ? 'Loading shared quiz…' : 'Carregando simulado…', 'success');
+
+  try {
+    const quiz = await window.loadSharedQuiz(id);
+    // Pre-fill the name input and textarea, then auto-load
+    const nameInput = document.getElementById('quiz-name-input');
+    if(nameInput) nameInput.value = quiz.name;
+    // Load directly
+    State.original  = quiz.questions;
+    State.questions = (function(a){
+      a=a.slice();
+      for(let i=a.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
+      }
+      return a;
+    })(quiz.questions).map(q=>{
+      const correct=q.choices[q.correctIndex];
+      const choices=(function(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;})(q.choices);
+      return {...q,choices,correctIndex:choices.indexOf(correct)};
+    });
+    State.current  = 0;
+    State.score    = 0;
+    State.answers  = [];
+    State.redoId   = null;
+    State.redoName = null;
+    // Clean URL without reloading
+    window.history.replaceState({}, '', '/');
+    showScreen('screen-quiz');
+    renderQuestion();
+  } catch(e) {
+    showToast(isEn ? 'Shared quiz not found' : 'Simulado não encontrado', 'error');
+    if(document.getElementById('screen-home')) showScreen('screen-home');
+  }
 }

@@ -190,3 +190,49 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   // If dismissed and not logged in: do nothing (truly optional)
 });
+
+/* ── SHARE QUIZ ─────────────────────────────────────────── */
+const SHARE_REST = SUPA_URL + '/rest/v1/shared_quizzes';
+
+async function shareQuiz(name, questions) {
+  // Generate a short random ID: 8 chars, alphanumeric
+  const id = Array.from(crypto.getRandomValues(new Uint8Array(6)))
+    .map(b => b.toString(36).padStart(2,'0')).join('').slice(0,8);
+
+  const res = await fetch(SHARE_REST, {
+    method:  'POST',
+    headers: {
+      'apikey':        SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type':  'application/json',
+      'Prefer':        'return=minimal',
+    },
+    body: JSON.stringify({ id, name, questions }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error('Share failed: ' + err);
+  }
+
+  return window.location.origin + '/?share=' + id;
+}
+
+async function loadSharedQuiz(id) {
+  const res = await fetch(
+    SHARE_REST + '?id=eq.' + encodeURIComponent(id) + '&select=name,questions',
+    {
+      headers: {
+        'apikey':        SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+      }
+    }
+  );
+  if (!res.ok) throw new Error('Could not load shared quiz');
+  const rows = await res.json();
+  if (!rows.length) throw new Error('Shared quiz not found');
+  return rows[0];
+}
+
+window.shareQuiz     = shareQuiz;
+window.loadSharedQuiz = loadSharedQuiz;

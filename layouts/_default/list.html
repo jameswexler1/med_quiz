@@ -157,6 +157,14 @@
           </svg>
           <span data-i18n="final.saveBtn">Salvar Resultado</span>
         </button>
+        <button class="btn btn-secondary btn-full" id="share-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          <span data-i18n="final.shareBtn">Compartilhar Quiz</span>
+        </button>
         <button class="btn btn-secondary btn-full" id="final-new-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1 0 .49-4.98"/>
@@ -198,5 +206,36 @@
 
 </div><!-- /home-inner -->
 
+
+
+  <!-- Share modal -->
+  <div id="share-modal" class="hidden">
+    <div class="sync-backdrop" id="share-backdrop"></div>
+    <div class="sync-dialog card">
+      <h3 style="margin-bottom:6px" id="share-modal-title">Compartilhar Quiz</h3>
+      <p style="color:var(--text-2);font-size:.9rem;margin-bottom:18px" id="share-modal-sub">Qualquer pessoa com o link pode fazer este simulado.</p>
+      <div id="share-link-wrap" class="hidden" style="margin-bottom:12px">
+        <input id="share-link-input" class="input" type="text" readonly
+          style="font-size:.8rem;font-family:monospace;cursor:pointer"
+          onclick="this.select()"/>
+        <button class="btn btn-primary btn-full" id="share-copy-btn" style="margin-top:8px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          <span id="share-copy-label">Copiar link</span>
+        </button>
+      </div>
+      <button class="btn btn-primary btn-full" id="share-generate-btn" style="margin-bottom:8px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+        <span id="share-generate-label">Gerar link</span>
+      </button>
+      <button class="btn btn-ghost btn-full" id="share-close-btn">Fechar / Close</button>
+    </div>
+  </div>
 
 {{ end }}
