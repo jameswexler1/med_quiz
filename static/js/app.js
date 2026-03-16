@@ -641,6 +641,16 @@ function openHistoryMenu(btn) {
     `<button class="history-menu-item delete-btn" data-idx="${idx}" style="color:var(--red)">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6m4-6v6"/><path d="M9,6V4h6v2"/></svg>
       <span>${isEn?'Delete':'Excluir'}</span></button>`;
+  document.body.appendChild(menu);
+  const rect  = btn.getBoundingClientRect();
+  const menuH = menu.offsetHeight || 160;
+  const menuW = menu.offsetWidth  || 160;
+  const top   = (window.innerHeight - rect.bottom > menuH)
+    ? rect.bottom + window.scrollY + 4
+    : rect.top    + window.scrollY - menuH - 4;
+  const left  = Math.min(rect.right - menuW, window.innerWidth - menuW - 8);
+  menu.style.top  = top  + 'px';
+  menu.style.left = left + 'px';
   _histMenuEl = menu;
 }
 
