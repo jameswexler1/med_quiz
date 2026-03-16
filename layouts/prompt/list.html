@@ -1,0 +1,138 @@
+{{ define "title" }}Prompt IA — MedQuiz{{ end }}
+{{ define "main" }}
+<div class="prompt-page">
+  <div class="prompt-header">
+    <h1>
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-.3em;margin-right:8px;color:var(--accent)">
+        <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+      </svg>
+      Prompt IA
+    </h1>
+    <p data-i18n="prompt.subtitle">Copie e use com ChatGPT, Claude, OpenEvidence ou qualquer IA</p>
+  </div>
+
+  <!-- Prompt PT -->
+  <div class="card" id="prompt-pt">
+    <div class="prompt-card-header">
+      <h3>🇧🇷 Português</h3>
+      <button class="btn btn-secondary btn-sm" onclick="copyPrompt('prompt-code-pt', this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        <span data-i18n="prompt.copy">Copiar</span>
+      </button>
+    </div>
+    <pre class="prompt-code" id="prompt-code-pt">Crie 10 questões de múltipla escolha para residência médica sobre o tema: [TEMA AQUI].
+
+Requisitos:
+- Cada questão deve ter 5 alternativas (A, B, C, D, E)
+- Nível de dificuldade: residência médica (difícil)
+- Inclua explicação detalhada da resposta correta
+- Mencione mecanismo fisiopatológico quando relevante
+- Use termos médicos precisos em português
+
+Retorne SOMENTE um array JSON válido, sem texto antes ou depois, sem markdown, sem blocos de código. Use exatamente este formato:
+
+[
+  {
+    "title": "Texto completo da pergunta aqui?",
+    "choices": [
+      "A) Primeira alternativa",
+      "B) Segunda alternativa",
+      "C) Terceira alternativa",
+      "D) Quarta alternativa",
+      "E) Quinta alternativa"
+    ],
+    "correctIndex": 2,
+    "explanation": "Explicação detalhada da resposta correta, incluindo fisiopatologia e pontos-chave."
+  }
+]
+
+Lembre-se: correctIndex é o índice (0-4) da alternativa correta no array choices.</pre>
+  </div>
+
+  <!-- Prompt EN -->
+  <div class="card" id="prompt-en">
+    <div class="prompt-card-header">
+      <h3>🇺🇸 English</h3>
+      <button class="btn btn-secondary btn-sm" onclick="copyPrompt('prompt-code-en', this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        <span data-i18n="prompt.copy">Copy</span>
+      </button>
+    </div>
+    <pre class="prompt-code" id="prompt-code-en">Create 10 multiple-choice questions for medical board/residency exam on the topic: [TOPIC HERE].
+
+Requirements:
+- Each question must have 5 answer choices (A, B, C, D, E)
+- Difficulty level: residency/board exam (hard)
+- Include a detailed explanation for the correct answer
+- Mention the pathophysiological mechanism when relevant
+- Use precise medical terminology
+
+Return ONLY a valid JSON array, with no text before or after, no markdown, no code blocks. Use exactly this format:
+
+[
+  {
+    "title": "Full question text here?",
+    "choices": [
+      "A) First option",
+      "B) Second option",
+      "C) Third option",
+      "D) Fourth option",
+      "E) Fifth option"
+    ],
+    "correctIndex": 2,
+    "explanation": "Detailed explanation of the correct answer, including pathophysiology and key teaching points."
+  }
+]
+
+Remember: correctIndex is the 0-based index (0-4) of the correct answer in the choices array.</pre>
+  </div>
+
+  <!-- JSON format reference -->
+  <div class="card">
+    <div class="prompt-card-header">
+      <h3 data-i18n="prompt.format">Formato JSON esperado</h3>
+    </div>
+    <pre class="prompt-code">[
+  {
+    "title": "String — texto da questão",
+    "choices": ["A) ...", "B) ...", "C) ...", "D) ...", "E) ..."],
+    "correctIndex": 2,
+    "explanation": "String — explicação da resposta correta"
+  },
+  ...
+]</pre>
+  </div>
+
+  <a href="/" class="btn btn-secondary btn-full">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="15,18 9,12 15,6"/>
+    </svg>
+    Voltar / Back
+  </a>
+</div>
+
+<script>
+function copyPrompt(id, btn) {
+  const text = document.getElementById(id)?.textContent || '';
+  navigator.clipboard.writeText(text.trim()).then(() => {
+    const span = btn.querySelector('span');
+    const orig = span.textContent;
+    btn.classList.add('copy-btn-success');
+    span.textContent = window.t('prompt.copied');
+    setTimeout(() => { btn.classList.remove('copy-btn-success'); span.textContent = orig; }, 2000);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text.trim(); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    const span = btn.querySelector('span');
+    const orig = span.textContent;
+    btn.classList.add('copy-btn-success'); span.textContent = '✓';
+    setTimeout(() => { btn.classList.remove('copy-btn-success'); span.textContent = orig; }, 2000);
+  });
+}
+</script>
+{{ end }}

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="{{ if eq site.Language.Lang "en" }}en{{ else }}pt-BR{{ end }}" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ block "title" . }}{{ .Title }} — MedQuiz{{ end }}</title>
+  <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ site.Params.description }}{{ end }}">
+  <meta name="theme-color" id="theme-meta" content="#070d1a">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MedQuiz">
+  <meta property="og:title" content="{{ .Title }} — MedQuiz">
+  <meta property="og:description" content="{{ site.Params.description }}">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/i18n.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="/js/app.js" defer></script>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="8" fill="#10b981"/>
+        <rect x="13" y="6"  width="6" height="20" rx="2" fill="white"/>
+        <rect x="6"  y="13" width="20" height="6"  rx="2" fill="white"/>
+      </svg>
+      <span>MedQuiz</span>
+    </a>
+    <div class="nav-controls">
+      {{ block "nav-links" . }}
+      <a href="/" class="nav-link" data-i18n="nav.history"></a>
+      <a href="/prompt/" class="nav-link" data-i18n="nav.prompt"></a>
+      {{ end }}
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button class="lang-btn active" data-lang="pt" onclick="setLang('pt')">PT</button>
+        <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+      </div>
+      <button class="theme-btn" id="theme-toggle" aria-label="Toggle theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="container">
+    {{ block "main" . }}{{ end }}
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <p class="footer-text">MedQuiz — Dados salvos localmente no seu dispositivo</p>
+  </div>
+</footer>
+
+<!-- Install Banner -->
+<div id="install-banner" class="hidden">
+  <div class="install-info">
+    <div class="install-title" data-i18n="install.title">Instalar MedQuiz</div>
+    <div class="install-sub"   data-i18n="install.sub">Adicionar à tela inicial</div>
+  </div>
+  <button class="btn btn-primary btn-sm" id="install-btn" data-i18n="install.btn">Instalar</button>
+  <button class="install-x" id="install-dismiss" aria-label="Dismiss">✕</button>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "MedQuiz — Residência Médica",
+  "short_name": "MedQuiz",
+  "description": "Simulados para residência médica",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070d1a",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon.svg",     "sizes": "any",      "type": "image/svg+xml" }
+  ],
+  "categories": ["education", "medical"]
+}

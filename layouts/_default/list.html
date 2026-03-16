@@ -1,0 +1,168 @@
+{{ define "main" }}
+<div class="home-inner">
+
+  <!-- Hero -->
+  <div class="home-hero">
+    <div class="home-logo-mark">
+      <svg width="34" height="34" viewBox="0 0 32 32" fill="none">
+        <rect x="13" y="3"  width="6" height="26" rx="2" fill="white"/>
+        <rect x="3"  y="13" width="26" height="6"  rx="2" fill="white"/>
+      </svg>
+    </div>
+    <h1 class="home-title">MedQuiz</h1>
+    <p class="home-tagline" data-i18n="home.tagline">Simulados para Residência Médica</p>
+  </div>
+
+  <!-- Screen: Home -->
+  <div id="screen-home" class="screen active">
+
+    <!-- JSON Input card -->
+    <div class="card">
+      <div class="card-label">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+        </svg>
+        <span data-i18n="home.pasteLabel">Cole o JSON das questões</span>
+      </div>
+      <textarea id="json-input" class="textarea" rows="7"
+        data-i18n="home.placeholder"
+        placeholder='[{"title":"Pergunta...","choices":["A) ...","B) ..."],"correctIndex":0,"explanation":"..."}]'></textarea>
+      <div class="upload-row">
+        <button class="btn btn-primary btn-full" id="load-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="5,3 19,12 5,21"/>
+          </svg>
+          <span data-i18n="home.loadBtn">Iniciar Simulado</span>
+        </button>
+        <label class="upload-file-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <span data-i18n="home.orUpload">ou carregar arquivo</span>
+          <input type="file" id="file-input" accept=".json,application/json" style="display:none">
+        </label>
+      </div>
+    </div>
+
+    <!-- History button -->
+    <button class="btn btn-secondary btn-full" id="history-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
+      </svg>
+      <span data-i18n="home.historyBtn">Ver Histórico</span>
+    </button>
+
+  </div><!-- /screen-home -->
+
+  <!-- Screen: Quiz -->
+  <div id="screen-quiz" class="screen">
+    <div class="quiz-inner">
+      <div class="quiz-top">
+        <button class="btn btn-ghost" id="quiz-back">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15,18 9,12 15,6"/>
+          </svg>
+        </button>
+        <div class="progress-wrap">
+          <div class="progress-meta" id="progress-text">Questão 1 de 10</div>
+          <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="card question-card">
+        <p class="question-text" id="question-text"></p>
+      </div>
+
+      <div class="choices" id="choices"></div>
+
+      <div class="card feedback-card hidden" id="feedback-card">
+        <div class="feedback-status"></div>
+        <div class="feedback-exp-label" data-i18n="quiz.expLabel">Explicação</div>
+        <p class="feedback-text"></p>
+      </div>
+
+      <button class="btn btn-primary btn-full hidden" id="next-btn">
+        <span data-i18n="quiz.next">Próxima</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="9,18 15,12 9,6"/>
+        </svg>
+      </button>
+    </div>
+  </div><!-- /screen-quiz -->
+
+  <!-- Screen: Final -->
+  <div id="screen-final" class="screen">
+    <div class="final-inner">
+      <div class="final-hero">
+        <h2 data-i18n="final.title">Simulado Concluído!</h2>
+        <div class="score-ring">
+          <svg class="score-ring-svg" viewBox="0 0 156 156">
+            <circle class="score-ring-bg"   cx="78" cy="78" r="68"/>
+            <circle class="score-ring-fill" cx="78" cy="78" r="68" id="score-ring-fill"/>
+          </svg>
+          <div class="score-ring-text">
+            <span class="score-big" id="score-big">0/0</span>
+            <span class="score-sub" id="score-sub">0%</span>
+          </div>
+        </div>
+        <div class="grade-badge" id="grade-badge"></div>
+      </div>
+
+      <div class="card chart-wrap">
+        <canvas id="performance-chart" height="220"></canvas>
+      </div>
+
+      <div class="card save-card">
+        <input type="text" id="quiz-name-input" class="input"
+          data-i18n="final.placeholder"
+          placeholder="Nome do simulado (ex: Cardiologia — USP)">
+        <button class="btn btn-primary btn-full" id="save-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17,21 17,13 7,13 7,21"/>
+            <polyline points="7,3 7,8 15,8"/>
+          </svg>
+          <span data-i18n="final.saveBtn">Salvar Resultado</span>
+        </button>
+        <button class="btn btn-secondary btn-full" id="final-new-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1 0 .49-4.98"/>
+          </svg>
+          <span data-i18n="final.newQuiz">Novo Simulado</span>
+        </button>
+      </div>
+    </div>
+  </div><!-- /screen-final -->
+
+  <!-- Screen: History -->
+  <div id="screen-history" class="screen">
+    <div class="history-inner">
+      <div class="history-header">
+        <h2 data-i18n="history.title">Histórico</h2>
+        <button class="btn btn-ghost btn-danger btn-sm" id="clear-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/>
+            <path d="M10,11v6m4-6v6"/><path d="M9,6V4h6v2"/>
+          </svg>
+          <span data-i18n="history.clear">Limpar</span>
+        </button>
+      </div>
+
+      <div id="history-list"></div>
+
+      <div id="history-chart-wrap" class="card chart-wrap hidden">
+        <canvas id="history-chart" height="220"></canvas>
+      </div>
+
+      <button class="btn btn-secondary btn-full" id="history-back">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15,18 9,12 15,6"/>
+        </svg>
+        <span data-i18n="history.back">Voltar</span>
+      </button>
+    </div>
+  </div><!-- /screen-history -->
+
+</div><!-- /home-inner -->
+{{ end }}

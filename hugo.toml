@@ -1,0 +1,12 @@
+baseURL       = "/"
+languageCode  = "pt-BR"
+title         = "MedQuiz"
+enableRobotsTXT = true
+disableKinds  = ["taxonomy","term","RSS"]
+
+[params]
+  description = "Simulados para residência médica"
+  themeColor  = "#10b981"
+
+[markup.goldmark.renderer]
+  unsafe = true
