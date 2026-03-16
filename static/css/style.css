@@ -285,3 +285,54 @@ h3{font-size:1.05rem;font-weight:600}
 .history-menu-item + .history-menu-item {
   border-top: 1px solid var(--border-soft);
 }
+
+/* ── INPUT TABS ───────────────────────────────────────── */
+.input-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-elevated);
+  border-radius: var(--r-sm);
+  padding: 3px;
+}
+.input-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--text-3);
+  transition: all .2s var(--ease);
+}
+.input-tab.active {
+  background: var(--bg-surface);
+  color: var(--text-1);
+  box-shadow: var(--sh-sm);
+}
+.input-tab:not(.active):hover { color: var(--text-2); }
+
+.text-format-hint {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: var(--bg-elevated);
+  border-radius: var(--r-md);
+  border-left: 3px solid var(--accent);
+}
+.text-format-hint p {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 8px;
+}
+.text-format-hint pre {
+  font-family: 'SF Mono','Fira Code',monospace;
+  font-size: .78rem;
+  color: var(--text-2);
+  line-height: 1.65;
+  white-space: pre-wrap;
+}

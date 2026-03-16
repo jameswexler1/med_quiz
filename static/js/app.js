@@ -36,6 +36,8 @@ function bindEvents(){
   document.getElementById('history-back')?.addEventListener('click',()=>showScreen('screen-home'));
   document.getElementById('clear-btn')?.addEventListener('click',clearHistory);
   document.getElementById('json-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey))loadQuiz()});
+  document.getElementById('load-text-btn')?.addEventListener('click',loadFromText);
+  document.getElementById('text-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey))loadFromText()});
 }
 
 /* THEME */
@@ -60,7 +62,11 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const el=document.getElementById(id);
   if(!el)return;
-  el.classList.add('active'); if(id==='screen-home'){const ta=document.getElementById('json-input');if(ta)ta.value='';checkResumeBanner();}
+  el.classList.add('active'); if(id==='screen-home'){
+    const ta=document.getElementById('json-input'); if(ta)ta.value='';
+    const tb=document.getElementById('text-input'); if(tb)tb.value='';
+    checkResumeBanner();
+  }
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='screen-history'){
     // Pull latest from Supabase before rendering history
@@ -635,4 +641,120 @@ function openHistoryMenu(btn) {
   menu.style.left = left + 'px';
 
   _histMenuEl = menu;
+}
+
+/* ── INPUT TAB SWITCHER ─────────────────────────────────── */
+function switchInputTab(mode) {
+  const isJson = mode === 'json';
+  document.getElementById('panel-json').style.display = isJson ? '' : 'none';
+  document.getElementById('panel-text').style.display = isJson ? 'none' : '';
+  document.getElementById('tab-json').classList.toggle('active', isJson);
+  document.getElementById('tab-text').classList.toggle('active', !isJson);
+}
+
+/* ── SIMPLE TEXT PARSER ─────────────────────────────────── */
+function parseSimpleText(raw) {
+  const isEn    = window.MQ_LANG === 'en';
+  const correctKw = isEn ? /^correct:/i     : /^correta?:/i;
+  const explainKw = isEn ? /^explanation:/i : /^explicaç[aã]o:/i;
+
+  // Split into question blocks by numbered lines: "1." "2." etc.
+  const blocks = raw.trim().split(/
+(?=\d+[\.\)]\s)/);
+  const questions = [];
+
+  for (const block of blocks) {
+    const lines = block.split('
+').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) continue;
+
+    // First line: "1. Question text" — strip the number
+    const titleLine = lines[0].replace(/^\d+[\.\)]\s*/, '').trim();
+    if (!titleLine) continue;
+
+    const choices   = [];
+    let correctIdx  = -1;
+    let explanation = '';
+    let inExplain   = false;
+    const explainLines = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i];
+
+      // Choice line: A. / A) / a. / a)
+      if (/^[A-Ea-e][\.\)]\s/.test(line)) {
+        inExplain = false;
+        const letter = line[0].toUpperCase();
+        const text   = line.slice(2).trim();
+        choices.push(letter + ') ' + text);
+        continue;
+      }
+
+      // Correct answer line
+      if (correctKw.test(line)) {
+        inExplain = false;
+        const val = line.replace(correctKw, '').trim().toUpperCase().replace(/[\.\)]/g,'');
+        correctIdx = ['A','B','C','D','E'].indexOf(val);
+        continue;
+      }
+
+      // Explanation line
+      if (explainKw.test(line)) {
+        inExplain = true;
+        const rest = line.replace(explainKw, '').trim();
+        if (rest) explainLines.push(rest);
+        continue;
+      }
+
+      // Continuation of explanation
+      if (inExplain) {
+        explainLines.push(line);
+        continue;
+      }
+    }
+
+    explanation = explainLines.join(' ').trim();
+
+    if (!choices.length || correctIdx < 0) continue;
+
+    questions.push({
+      title:        titleLine,
+      choices,
+      correctIndex: correctIdx,
+      explanation:  explanation || '',
+    });
+  }
+
+  return questions;
+}
+
+function loadFromText() {
+  const raw = (document.getElementById('text-input')?.value || '').trim();
+  if (!raw) { showToast(window.t('home.emptyErr'), 'error'); return; }
+
+  let data;
+  try {
+    data = parseSimpleText(raw);
+  } catch(e) {
+    showToast(window.t('home.textErr'), 'error'); return;
+  }
+
+  if (!data.length) {
+    showToast(window.t('home.textErrQ'), 'error'); return;
+  }
+
+  State.original  = data;
+  State.questions = shuffleArray(data).map(q => {
+    const correct = q.choices[q.correctIndex];
+    const choices = shuffleArray(q.choices);
+    return {...q, choices, correctIndex: choices.indexOf(correct)};
+  });
+  State.current  = 0;
+  State.score    = 0;
+  State.answers  = [];
+  State.redoId   = null;
+  State.redoName = null;
+  document.getElementById('resume-banner')?.classList.add('hidden');
+  showScreen('screen-quiz');
+  renderQuestion();
 }
