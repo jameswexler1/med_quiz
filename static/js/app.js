@@ -655,8 +655,8 @@ function switchInputTab(mode) {
 /* ── SIMPLE TEXT PARSER ─────────────────────────────────── */
 function parseSimpleText(raw) {
   const isEn    = window.MQ_LANG === 'en';
-  const correctKw = isEn ? /^correct:/i     : /^correta?:/i;
-  const explainKw = isEn ? /^explanation:/i : /^explicaç[aã]o:/i;
+  const correctKw = isEn ? /^correct:/i : /^correta?:/i;
+  const explainKw = isEn ? /^explanation:/i : /^explicac/i;
 
   // Split into question blocks by numbered lines: "1." "2." etc.
   const blocks = raw.trim().split(/
