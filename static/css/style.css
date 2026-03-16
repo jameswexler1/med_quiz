@@ -198,8 +198,12 @@ h3{font-size:1.05rem;font-weight:600}
 
 /* Responsive */
 @media(max-width:480px){
-  .nav-logo span{display:none}.nav-link{display:none}
+  .nav-logo span{display:none}
   .card{padding:16px;border-radius:var(--r-md)}
   .question-text{font-size:1rem}.choice-btn{padding:13px 14px}.score-big{font-size:1.9rem}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+@media(max-width:480px){
+  .nav-link{padding:5px 8px;font-size:.78rem}
+}
