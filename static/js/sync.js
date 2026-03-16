@@ -125,7 +125,8 @@ function openSyncModal() {
 }
 
 function buildSyncModal() {
-  if (document.getElementById('sync-modal')) return;
+  const existing = document.getElementById('sync-modal');
+  if (existing) existing.remove();
   const el = document.createElement('div');
   el.id = 'sync-modal';
   el.className = 'hidden';

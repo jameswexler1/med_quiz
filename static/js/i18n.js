@@ -40,6 +40,12 @@ window.MQ_TR = {
     'install.title': 'Instalar MedQuiz',
     'install.sub':   'Adicionar à tela inicial',
     'final.shareBtn':       'Compartilhar Quiz',
+    'resume.title':   'Continuar simulado',
+    'resume.btn':     'Continuar',
+    'share.sub':      'Qualquer pessoa com o link pode fazer este simulado.',
+    'share.copy':     'Copiar link',
+    'share.generate': 'Gerar link',
+    'share.close':    'Fechar',
     'install.btn':   'Instalar',
     'sync.title':           'Sincronizar progresso',
     'sync.subtitle':        'Use o mesmo nome em todos os seus dispositivos.',
@@ -96,6 +102,12 @@ window.MQ_TR = {
     'install.title': 'Install MedQuiz',
     'install.sub':   'Add to Home Screen',
     'final.shareBtn':       'Share Quiz',
+    'resume.title':   'Resume quiz',
+    'resume.btn':     'Resume',
+    'share.sub':      'Anyone with the link can take this quiz.',
+    'share.copy':     'Copy link',
+    'share.generate': 'Generate link',
+    'share.close':    'Close',
     'install.btn':   'Install',
     'sync.title':           'Sync progress',
     'sync.subtitle':        'Use the same username on all your devices.',
@@ -127,6 +139,10 @@ window.setLang = function(lang) {
     else el.textContent = window.t(k);
   });
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+  // Rebuild sync modal with new language if function exists
+  if (typeof buildSyncModal === 'function') buildSyncModal();
+  if (typeof updateSyncUI   === 'function') updateSyncUI();
+  if (typeof checkResumeBanner === 'function') checkResumeBanner();
 };
 
 document.addEventListener('DOMContentLoaded', () => window.setLang(window.MQ_LANG));
