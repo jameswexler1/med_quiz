@@ -92,6 +92,7 @@ function loadQuiz(){
     const choices=shuffleArray(q.choices);
     return {...q,choices,correctIndex:choices.indexOf(correct)};
   });State.current=0;State.score=0;State.answers=[];
+  document.getElementById('resume-banner')?.classList.add('hidden');
   showScreen('screen-quiz');renderQuestion();
 }
 
@@ -149,7 +150,7 @@ function nextQuestion(){
 }
 
 /* FINAL */
-function showFinal(){
+function showFinal(){clearSession();
   showScreen('screen-final');
   const total=State.questions.length,pct=Math.round((State.score/total)*100);
   document.getElementById('score-big').textContent=`${State.score}/${total}`;
@@ -359,6 +360,14 @@ function checkResumeBanner() {
   const banner  = document.getElementById('resume-banner');
   if (!banner) return;
 
+  // Never show banner if quiz or final screen is active
+  const quizActive  = document.getElementById('screen-quiz')?.classList.contains('active');
+  const finalActive = document.getElementById('screen-final')?.classList.contains('active');
+  if (quizActive || finalActive) {
+    banner.classList.add('hidden');
+    return;
+  }
+
   if (!session || !session.shuffled || !session.shuffled.length) {
     banner.classList.add('hidden');
     return;
@@ -379,8 +388,8 @@ function checkResumeBanner() {
     isEn ? 'Resume quiz' : 'Continuar simulado';
   document.getElementById('resume-meta').textContent =
     isEn
-      ? `Question ${done + 1} of ${total} — ${session.score} correct so far`
-      : `Questão ${done + 1} de ${total} — ${session.score} acerto(s) até agora`;
+      ? 'Question ' + (done+1) + ' of ' + total + ' — ' + session.score + ' correct so far'
+      : 'Questão ' + (done+1) + ' de ' + total + ' — ' + session.score + ' acerto(s) até agora';
   document.getElementById('resume-btn-label').textContent =
     isEn ? 'Resume' : 'Continuar';
 
