@@ -645,7 +645,7 @@ function openHistoryMenu(btn) {
 
 /* ── INPUT TAB SWITCHER ─────────────────────────────────── */
 function switchInputTab(mode) {
-  const isJson = mode === 'json';
+  var isJson = mode === 'json';
   document.getElementById('panel-json').style.display = isJson ? '' : 'none';
   document.getElementById('panel-text').style.display = isJson ? 'none' : '';
   document.getElementById('tab-json').classList.toggle('active', isJson);
@@ -654,107 +654,105 @@ function switchInputTab(mode) {
 
 /* ── SIMPLE TEXT PARSER ─────────────────────────────────── */
 function parseSimpleText(raw) {
-  const isEn    = window.MQ_LANG === 'en';
-  const correctKw = isEn ? /^correct:/i : /^correta?:/i;
-  const explainKw = isEn ? /^explanation:/i : /^explicac/i;
+  var isEn = window.MQ_LANG === 'en';
+  var lines = raw.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+  var questions = [];
+  var current = null;
+  var inExplain = false;
+  var explainLines = [];
 
-  // Split into question blocks by numbered lines: "1." "2." etc.
-  const blocks = raw.trim().split(/
-(?=\d+[\.\)]\s)/);
-  const questions = [];
-
-  for (const block of blocks) {
-    const lines = block.split('
-').map(l => l.trim()).filter(Boolean);
-    if (!lines.length) continue;
-
-    // First line: "1. Question text" — strip the number
-    const titleLine = lines[0].replace(/^\d+[\.\)]\s*/, '').trim();
-    if (!titleLine) continue;
-
-    const choices   = [];
-    let correctIdx  = -1;
-    let explanation = '';
-    let inExplain   = false;
-    const explainLines = [];
-
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i];
-
-      // Choice line: A. / A) / a. / a)
-      if (/^[A-Ea-e][\.\)]\s/.test(line)) {
-        inExplain = false;
-        const letter = line[0].toUpperCase();
-        const text   = line.slice(2).trim();
-        choices.push(letter + ') ' + text);
-        continue;
-      }
-
-      // Correct answer line
-      if (correctKw.test(line)) {
-        inExplain = false;
-        const val = line.replace(correctKw, '').trim().toUpperCase().replace(/[\.\)]/g,'');
-        correctIdx = ['A','B','C','D','E'].indexOf(val);
-        continue;
-      }
-
-      // Explanation line
-      if (explainKw.test(line)) {
-        inExplain = true;
-        const rest = line.replace(explainKw, '').trim();
-        if (rest) explainLines.push(rest);
-        continue;
-      }
-
-      // Continuation of explanation
-      if (inExplain) {
-        explainLines.push(line);
-        continue;
-      }
+  function commitQuestion() {
+    if (!current) return;
+    if (current.choices.length && current.correctIdx >= 0) {
+      current.obj.explanation = explainLines.join(' ').trim();
+      questions.push(current.obj);
     }
-
-    explanation = explainLines.join(' ').trim();
-
-    if (!choices.length || correctIdx < 0) continue;
-
-    questions.push({
-      title:        titleLine,
-      choices,
-      correctIndex: correctIdx,
-      explanation:  explanation || '',
-    });
+    current = null;
+    inExplain = false;
+    explainLines = [];
   }
 
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+
+    // New question: starts with a number followed by . or )
+    if (/^\d+[.)]\s/.test(line)) {
+      commitQuestion();
+      inExplain = false;
+      explainLines = [];
+      current = {
+        choices: [],
+        correctIdx: -1,
+        obj: {
+          title: line.replace(/^\d+[.)]\s*/, '').trim(),
+          choices: [],
+          correctIndex: -1,
+          explanation: ''
+        }
+      };
+      continue;
+    }
+
+    if (!current) continue;
+
+    // Choice line: A. B. C. D. E. or A) B) etc
+    if (/^[A-Ea-e][.)]\s/.test(line)) {
+      inExplain = false;
+      var letter = line[0].toUpperCase();
+      var text   = line.slice(2).trim();
+      current.choices.push(letter + ') ' + text);
+      current.obj.choices = current.choices;
+      continue;
+    }
+
+    // Correct answer
+    var isCorrect = isEn ? /^correct:/i.test(line) : /^correta?:/i.test(line);
+    if (isCorrect) {
+      inExplain = false;
+      var val = line.replace(/^[^:]+:\s*/, '').trim().toUpperCase().replace(/[.)]/g, '');
+      current.correctIdx = ['A','B','C','D','E'].indexOf(val);
+      current.obj.correctIndex = current.correctIdx;
+      continue;
+    }
+
+    // Explanation
+    var isExplain = isEn ? /^explanation:/i.test(line) : /^explicac/i.test(line);
+    if (isExplain) {
+      inExplain = true;
+      var rest = line.replace(/^[^:]+:\s*/, '').trim();
+      if (rest) explainLines.push(rest);
+      continue;
+    }
+
+    if (inExplain) {
+      explainLines.push(line);
+    }
+  }
+
+  commitQuestion();
   return questions;
 }
 
 function loadFromText() {
-  const raw = (document.getElementById('text-input')?.value || '').trim();
+  var raw = (document.getElementById('text-input') ? document.getElementById('text-input').value : '').trim();
   if (!raw) { showToast(window.t('home.emptyErr'), 'error'); return; }
-
-  let data;
-  try {
-    data = parseSimpleText(raw);
-  } catch(e) {
-    showToast(window.t('home.textErr'), 'error'); return;
-  }
-
-  if (!data.length) {
-    showToast(window.t('home.textErrQ'), 'error'); return;
-  }
-
+  var data;
+  try { data = parseSimpleText(raw); } catch(e) { showToast(window.t('home.textErr'), 'error'); return; }
+  if (!data.length) { showToast(window.t('home.textErrQ'), 'error'); return; }
   State.original  = data;
-  State.questions = shuffleArray(data).map(q => {
-    const correct = q.choices[q.correctIndex];
-    const choices = shuffleArray(q.choices);
-    return {...q, choices, correctIndex: choices.indexOf(correct)};
+  State.questions = shuffleArray(data).map(function(q) {
+    var correct  = q.choices[q.correctIndex];
+    var choices  = shuffleArray(q.choices);
+    return Object.assign({}, q, {choices: choices, correctIndex: choices.indexOf(correct)});
   });
   State.current  = 0;
   State.score    = 0;
   State.answers  = [];
   State.redoId   = null;
   State.redoName = null;
-  document.getElementById('resume-banner')?.classList.add('hidden');
+  var rb = document.getElementById('resume-banner');
+  if (rb) rb.classList.add('hidden');
   showScreen('screen-quiz');
   renderQuestion();
 }
+
