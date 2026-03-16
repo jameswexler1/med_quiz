@@ -48,7 +48,7 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const el=document.getElementById(id);
   if(!el)return;
-  el.classList.add('active');
+  el.classList.add('active'); if(id==='screen-home'){const ta=document.getElementById('json-input');if(ta)ta.value='';}
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='screen-history'){
     // Pull latest from Supabase before rendering history
