@@ -22,7 +22,30 @@
     <span>Sync</span>
   </div>
 
+
+  <!-- Resume banner (shown by JS if session exists) -->
+  <div id="resume-banner" class="hidden">
+    <div class="card" style="border-color:var(--accent);background:var(--accent-subtle)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div>
+          <div style="font-weight:700;font-size:.9375rem;color:var(--text-1)" id="resume-title">Continuar quiz</div>
+          <div style="font-size:.8rem;color:var(--text-2);margin-top:2px" id="resume-meta"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="btn btn-primary btn-sm" id="resume-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5,3 19,12 5,21"/></svg>
+            <span id="resume-btn-label">Continuar</span>
+          </button>
+          <button class="btn btn-ghost btn-sm" id="resume-discard-btn" style="color:var(--text-3)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Screen: Home -->
+
   <div id="screen-home" class="screen active">
 
     <!-- JSON Input card -->

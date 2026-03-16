@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   registerSW();
   initInstallBanner();
   bindEvents();
-  if(document.getElementById('screen-home'))showScreen('screen-home');
+  if(document.getElementById('screen-home')){showScreen('screen-home');checkResumeBanner();}
 });
 
 function bindEvents(){
@@ -17,7 +17,7 @@ function bindEvents(){
   document.getElementById('history-btn')?.addEventListener('click',()=>showScreen('screen-history'));
   document.getElementById('file-trigger')?.addEventListener('click',()=>document.getElementById('file-input')?.click());
   document.getElementById('file-input')?.addEventListener('change',handleFileUpload);
-  document.getElementById('quiz-back')?.addEventListener('click',()=>{if(confirm(window.t('quiz.exitMsg')))showScreen('screen-home')});
+  document.getElementById('quiz-back')?.addEventListener('click',()=>{if(confirm(window.t('quiz.exitMsg'))){clearSession();showScreen('screen-home')}});
   document.getElementById('next-btn')?.addEventListener('click',nextQuestion);
   document.getElementById('save-btn')?.addEventListener('click',()=>saveResult());
   document.getElementById('final-new-btn')?.addEventListener('click',()=>showScreen('screen-home'));
@@ -48,7 +48,7 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const el=document.getElementById(id);
   if(!el)return;
-  el.classList.add('active'); if(id==='screen-home'){const ta=document.getElementById('json-input');if(ta)ta.value='';}
+  el.classList.add('active'); if(id==='screen-home'){const ta=document.getElementById('json-input');if(ta)ta.value='';checkResumeBanner();}
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='screen-history'){
     // Pull latest from Supabase before rendering history
@@ -139,6 +139,7 @@ function handleAnswer(idx){
   fb.querySelector('.feedback-text').textContent=q.explanation||'';
   fb.classList.remove('hidden');
   document.getElementById('next-btn').classList.remove('hidden');
+  saveSession();
 }
 
 function nextQuestion(){
@@ -314,3 +315,84 @@ document.addEventListener('click', function(e) {
   var idx = parseInt(btn.dataset.idx, 10);
   redoQuiz(idx);
 });
+
+/* ── SESSION PERSISTENCE ───────────────────────────────── */
+function saveSession() {
+  const session = {
+    questions: State.original || State.questions,
+    shuffled:  State.questions,
+    current:   State.current,
+    score:     State.score,
+    answers:   State.answers,
+    redoId:    State.redoId   || null,
+    redoName:  State.redoName || null,
+    savedAt:   Date.now(),
+  };
+  localStorage.setItem('mq_session', JSON.stringify(session));
+}
+
+function clearSession() {
+  localStorage.removeItem('mq_session');
+}
+
+function loadSession() {
+  try {
+    const s = localStorage.getItem('mq_session');
+    return s ? JSON.parse(s) : null;
+  } catch(e) { return null; }
+}
+
+function resumeSession(session) {
+  State.original  = session.questions;
+  State.questions = session.shuffled;
+  State.current   = session.current;
+  State.score     = session.score;
+  State.answers   = session.answers || [];
+  State.redoId    = session.redoId   || null;
+  State.redoName  = session.redoName || null;
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function checkResumeBanner() {
+  const session = loadSession();
+  const banner  = document.getElementById('resume-banner');
+  if (!banner) return;
+
+  if (!session || !session.shuffled || !session.shuffled.length) {
+    banner.classList.add('hidden');
+    return;
+  }
+
+  // Don't show if session is older than 7 days
+  if (Date.now() - session.savedAt > 7 * 24 * 60 * 60 * 1000) {
+    clearSession();
+    banner.classList.add('hidden');
+    return;
+  }
+
+  const done  = session.current;
+  const total = session.shuffled.length;
+  const isEn  = window.MQ_LANG === 'en';
+
+  document.getElementById('resume-title').textContent =
+    isEn ? 'Resume quiz' : 'Continuar simulado';
+  document.getElementById('resume-meta').textContent =
+    isEn
+      ? `Question ${done + 1} of ${total} — ${session.score} correct so far`
+      : `Questão ${done + 1} de ${total} — ${session.score} acerto(s) até agora`;
+  document.getElementById('resume-btn-label').textContent =
+    isEn ? 'Resume' : 'Continuar';
+
+  banner.classList.remove('hidden');
+
+  document.getElementById('resume-btn').onclick = () => {
+    banner.classList.add('hidden');
+    resumeSession(session);
+  };
+
+  document.getElementById('resume-discard-btn').onclick = () => {
+    clearSession();
+    banner.classList.add('hidden');
+  };
+}
