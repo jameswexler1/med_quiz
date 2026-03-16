@@ -81,7 +81,7 @@ function loadQuiz(){
   if(!Array.isArray(data)||!data.length||!data[0].title||!Array.isArray(data[0].choices)||data[0].correctIndex===undefined){
     showToast(window.t('home.jsonErr'),'error');return
   }
-  State.questions=data;State.current=0;State.score=0;State.answers=[];
+  State.original=data;State.questions=data.slice().sort(()=>Math.random()-.5);State.current=0;State.score=0;State.answers=[];
   showScreen('screen-quiz');renderQuestion();
 }
 
@@ -177,7 +177,7 @@ function saveResult(){
   const locale=window.MQ_LANG==='pt'?'pt-BR':'en-US';
   const name=(document.getElementById('quiz-name-input')?.value||'').trim()||`Quiz ${new Date().toLocaleDateString(locale)}`;
   const history=getHistory();
-  history.push({id:Date.now(),name,date:new Date().toLocaleString(locale),score:State.score,total:State.questions.length,percent:Math.round((State.score/State.questions.length)*100),questions:State.questions});
+  history.push({id:Date.now(),name,date:new Date().toLocaleString(locale),score:State.score,total:State.questions.length,percent:Math.round((State.score/State.questions.length)*100),questions:State.original||State.questions});
   localStorage.setItem('mq_history',JSON.stringify(history));
   showToast(window.t('final.saveOk'),'success');
   // Push to Supabase if logged in
