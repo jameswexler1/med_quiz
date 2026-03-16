@@ -239,7 +239,7 @@ function renderHistory(){
     const item=document.createElement('div');
     item.className='history-item';item.style.animationDelay=(i*45)+'ms';
     const pc=h.percent>=70?'var(--green)':h.percent>=50?'var(--yellow)':'var(--red)';
-    item.innerHTML=`<div class="history-item-info"><div class="history-item-name">${esc(h.name)}</div><div class="history-item-date">${h.date}</div></div><div class="history-item-score"><div class="history-score-num" style="color:${pc}">${h.score}/${h.total}</div><div class="history-score-pct">${h.percent}%</div></div>${h.questions?`<button class="btn btn-secondary btn-sm redo-btn" data-idx="${history.length-1-i}" aria-label="Redo" title="Refazer / Redo" style="margin-left:8px;flex-shrink:0;padding:7px 10px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1 0 .49-4.98"/></svg></button>`:""}`;
+    item.innerHTML=`<div class="history-item-info"><div class="history-item-name">${esc(h.name)}</div><div class="history-item-date">${h.date}</div></div><div class="history-item-score"><div class="history-score-num" style="color:${pc}">${h.score}/${h.total}</div><div class="history-score-pct">${h.percent}%</div></div><div style="display:flex;gap:6px;margin-left:8px;flex-shrink:0">${h.questions?`<button class="btn btn-secondary btn-sm share-history-btn" data-idx="${history.length-1-i}" aria-label="Share" title="Compartilhar / Share" style="padding:7px 10px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>`:""} ${h.questions?`<button class="btn btn-secondary btn-sm redo-btn" data-idx="${history.length-1-i}" aria-label="Redo" title="Refazer / Redo" style="padding:7px 10px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1 0 .49-4.98"/></svg></button>`:""}</div>`;
     list.appendChild(item);
   });
   renderHistoryChart(history);
@@ -321,12 +321,13 @@ function redoQuiz(historyIdx) {
   renderQuestion();
 }
 
-// Delegated click handler for dynamically rendered redo buttons
+// Delegated click handler for dynamically rendered redo + share buttons
 document.addEventListener('click', function(e) {
-  var btn = e.target.closest('.redo-btn');
-  if (!btn) return;
-  var idx = parseInt(btn.dataset.idx, 10);
-  redoQuiz(idx);
+  const redo = e.target.closest('.redo-btn');
+  if (redo) { redoQuiz(parseInt(redo.dataset.idx, 10)); return; }
+
+  const share = e.target.closest('.share-history-btn');
+  if (share) { shareFromHistory(parseInt(share.dataset.idx, 10)); }
 });
 
 /* ── SESSION PERSISTENCE ───────────────────────────────── */
@@ -518,5 +519,43 @@ async function handleSharedLink(id) {
   } catch(e) {
     showToast(isEn ? 'Shared quiz not found' : 'Simulado não encontrado', 'error');
     if(document.getElementById('screen-home')) showScreen('screen-home');
+  }
+}
+
+async function shareFromHistory(historyIdx) {
+  const history = getHistory();
+  const entry   = history[historyIdx];
+  if (!entry || !entry.questions || !entry.questions.length) {
+    showToast(
+      window.MQ_LANG === 'pt'
+        ? 'Questões não encontradas neste item.'
+        : 'No questions found for this entry.',
+      'error'
+    );
+    return;
+  }
+
+  const isEn = window.MQ_LANG === 'en';
+
+  // Reuse the share modal but pre-generate the link immediately
+  document.getElementById('share-modal-title').textContent =
+    isEn ? 'Share Quiz' : 'Compartilhar Quiz';
+  document.getElementById('share-modal-sub').textContent =
+    isEn ? 'Generating link…' : 'Gerando link…';
+  document.getElementById('share-link-wrap').classList.add('hidden');
+  document.getElementById('share-generate-btn').classList.add('hidden');
+  document.getElementById('share-modal').classList.remove('hidden');
+
+  try {
+    const url = await window.shareQuiz(entry.name, entry.questions);
+    document.getElementById('share-modal-sub').textContent =
+      isEn ? 'Anyone with the link can take this quiz.' : 'Qualquer pessoa com o link pode fazer este simulado.';
+    document.getElementById('share-link-input').value = url;
+    document.getElementById('share-link-wrap').classList.remove('hidden');
+    const copyLabel = document.getElementById('share-copy-label');
+    copyLabel.textContent = isEn ? 'Copy link' : 'Copiar link';
+  } catch(e) {
+    closeShareModal();
+    showToast(isEn ? 'Could not generate link' : 'Erro ao gerar link', 'error');
   }
 }
