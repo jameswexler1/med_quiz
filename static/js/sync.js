@@ -90,6 +90,13 @@ const Sync = {
       if (merged.length !== local.length) {
         showToast(window.t('sync.mergeOk'), 'success');
       }
+      // Re-render history screen if currently visible
+      if (typeof renderHistory === 'function') {
+        const histScreen = document.getElementById('screen-history');
+        if (histScreen && histScreen.classList.contains('active')) {
+          renderHistory();
+        }
+      }
     } catch(e) { console.warn('MedQuiz sync pull failed', e); }
   },
 };

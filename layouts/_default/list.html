@@ -175,21 +175,5 @@
 
 </div><!-- /home-inner -->
 
-<script>
-// Hook saveResult to auto-push after saving
-document.addEventListener('DOMContentLoaded', function() {
-  var orig = window.saveResult;
-  if (typeof orig === 'function') {
-    window.saveResult = async function() {
-      orig();
-      setTimeout(function() {
-        if (window.Sync && Sync.isLoggedIn()) {
-          Sync.push().catch(console.warn);
-        }
-      }, 1800); // after the redirect delay in saveResult
-    };
-  }
-});
-</script>
 
 {{ end }}
