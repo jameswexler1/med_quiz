@@ -50,85 +50,34 @@
 
     <!-- JSON Input card -->
     <div class="card">
-      <!-- Input mode tabs -->
-      <div class="input-tabs">
-        <button class="input-tab active" id="tab-json" onclick="switchInputTab('json')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
-          </svg>
-          <span>JSON</span>
-        </button>
-        <button class="input-tab" id="tab-text" onclick="switchInputTab('text')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="18" x2="15" y2="18"/>
-          </svg>
-          <span data-i18n="home.tabText">Texto simples</span>
-        </button>
+      <div class="card-label">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+        </svg>
+        <span data-i18n="home.pasteLabel">Cole o JSON ou texto das questões</span>
       </div>
-
-      <!-- JSON panel -->
-      <div id="panel-json">
-        <div class="card-label" style="margin-top:14px">
-          <span data-i18n="home.pasteLabel">Cole o JSON das questões</span>
-        </div>
-        <textarea id="json-input" class="textarea" rows="7"
-          data-i18n="home.placeholder"
-          placeholder='[{"title":"Pergunta...","choices":["A) ...","B) ..."],"correctIndex":0,"explanation":"..."}]'></textarea>
-        <div class="upload-row" style="margin-top:14px">
-          <button class="btn btn-primary btn-full" id="load-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polygon points="5,3 19,12 5,21"/>
-            </svg>
-            <span data-i18n="home.loadBtn">Iniciar Simulado</span>
-          </button>
-          <label class="upload-file-btn">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            <span data-i18n="home.orUpload">ou carregar arquivo</span>
-            <input type="file" id="file-input" accept=".json,application/json" style="display:none">
-          </label>
-        </div>
-      </div>
-
-      <!-- Simple text panel -->
-      <div id="panel-text" style="display:none">
-        <div class="card-label" style="margin-top:14px">
-          <span data-i18n="home.textLabel">Cole as questões em texto simples</span>
-        </div>
-        <textarea id="text-input" class="textarea" rows="7"
-          data-i18n="home.textPlaceholder"
-          placeholder="1. Qual o tratamento de primeira linha?
-A. Opção A
-B. Opção B
-C. Opção C
-D. Opção D
-Correta: B
-Explicação: Porque..."></textarea>
-        <div style="margin-top:14px">
-          <button class="btn btn-primary btn-full" id="load-text-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polygon points="5,3 19,12 5,21"/>
-            </svg>
-            <span data-i18n="home.loadBtn">Iniciar Simulado</span>
-          </button>
-        </div>
-        <div class="text-format-hint" id="text-format-hint">
-          <p data-i18n="home.textHint1">Formato aceito:</p>
-          <pre data-i18n="home.textHintPre">1. Pergunta aqui?
-A. Alternativa A
-B. Alternativa B
-C. Alternativa C
-D. Alternativa D
-Correta: C
-Explicação: Texto explicativo.</pre>
-        </div>
+      <textarea id="json-input" class="textarea" rows="7"
+        data-i18n="home.placeholder"
+        placeholder='[{"title":"Pergunta...","choices":["A) ..."],"correctIndex":0,"explanation":"..."}]'></textarea>
+      <div class="upload-row" style="margin-top:14px">
+        <button class="btn btn-primary btn-full" id="load-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="5,3 19,12 5,21"/>
+          </svg>
+          <span data-i18n="home.loadBtn">Iniciar Simulado</span>
+        </button>
+        <label class="upload-file-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <span data-i18n="home.orUpload">ou carregar arquivo</span>
+          <input type="file" id="file-input" accept=".json,application/json,.txt,text/plain" style="display:none">
+        </label>
       </div>
     </div>
 
-    <!-- History button -->
+<!-- History button -->
     <button class="btn btn-secondary btn-full" id="history-btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>

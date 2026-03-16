@@ -14,34 +14,27 @@
     <p data-i18n="prompt.subtitle">Copie e use com qualquer IA</p>
   </div>
 
-  <!-- PT prompt -->
-  <div class="card">
-    <div class="prompt-card-header">
-      <h3>{{ $p.pt.label }}</h3>
-      <button class="btn btn-secondary btn-sm" onclick="copyPrompt('prompt-code-pt', this)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="9" y="9" width="13" height="13" rx="2"/>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-        </svg>
-        <span data-i18n="prompt.copy">Copiar</span>
-      </button>
-    </div>
-    <pre class="prompt-code" id="prompt-code-pt">{{ $p.pt.prompt }}</pre>
-  </div>
+  <div class="prompt-grid">
 
-  <!-- EN prompt -->
-  <div class="card">
-    <div class="prompt-card-header">
-      <h3>{{ $p.en.label }}</h3>
-      <button class="btn btn-secondary btn-sm" onclick="copyPrompt('prompt-code-en', this)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="9" y="9" width="13" height="13" rx="2"/>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-        </svg>
-        <span data-i18n="prompt.copy">Copy</span>
-      </button>
+    {{ range $key, $val := $p }}
+    <div class="card prompt-card">
+      <div class="prompt-card-header">
+        <div>
+          <h3>{{ $val.label }}</h3>
+          <span class="prompt-format-badge">{{ $val.format }}</span>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="copyPrompt('prompt-code-{{ $key }}', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          <span data-i18n="prompt.copy">Copiar</span>
+        </button>
+      </div>
+      <pre class="prompt-code" id="prompt-code-{{ $key }}">{{ $val.prompt }}</pre>
     </div>
-    <pre class="prompt-code" id="prompt-code-en">{{ $p.en.prompt }}</pre>
+    {{ end }}
+
   </div>
 
   <!-- JSON format reference -->
@@ -52,12 +45,26 @@
     <pre class="prompt-code">[
   {
     "title": "String — texto da questão",
-    "choices": ["A) ...", "B) ...", "C) ...", "D) ...", "E) ..."],
+    "choices": ["A) ...", "B) ...", "C) ...", "D) ..."],
     "correctIndex": 2,
     "explanation": "String — explicação da resposta correta"
   },
   ...
 ]</pre>
+  </div>
+
+  <!-- Simple text format reference -->
+  <div class="card">
+    <div class="prompt-card-header">
+      <h3 data-i18n="prompt.formatText">Formato Texto esperado</h3>
+    </div>
+    <pre class="prompt-code">1. Pergunta aqui?
+A. Alternativa A
+B. Alternativa B
+C. Alternativa C
+D. Alternativa D
+Correta: C
+Explicação: Texto da explicação aqui.</pre>
   </div>
 
   <a href="/" class="btn btn-secondary btn-full">

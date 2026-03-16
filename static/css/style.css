@@ -336,3 +336,25 @@ h3{font-size:1.05rem;font-weight:600}
   line-height: 1.65;
   white-space: pre-wrap;
 }
+
+/* ── PROMPT GRID ──────────────────────────────────────── */
+.prompt-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 600px) {
+  .prompt-grid { grid-template-columns: 1fr; }
+}
+.prompt-card { display: flex; flex-direction: column; gap: 10px; }
+.prompt-format-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: .7rem;
+  font-weight: 700;
+  background: var(--accent-subtle);
+  color: var(--accent);
+  margin-top: 3px;
+  letter-spacing: .04em;
+}

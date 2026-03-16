@@ -36,7 +36,6 @@ function bindEvents(){
   document.getElementById('history-back')?.addEventListener('click',()=>showScreen('screen-home'));
   document.getElementById('clear-btn')?.addEventListener('click',clearHistory);
   document.getElementById('json-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey))loadQuiz()});
-  document.getElementById('load-text-btn')?.addEventListener('click',loadFromText);
   document.getElementById('text-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey))loadFromText()});
 }
 
@@ -64,7 +63,6 @@ function showScreen(id){
   if(!el)return;
   el.classList.add('active'); if(id==='screen-home'){
     const ta=document.getElementById('json-input'); if(ta)ta.value='';
-    const tb=document.getElementById('text-input'); if(tb)tb.value='';
     checkResumeBanner();
   }
   window.scrollTo({top:0,behavior:'smooth'});
@@ -100,9 +98,20 @@ function loadQuiz(){
   const raw=(document.getElementById('json-input')?.value||'').trim();
   if(!raw){showToast(window.t('home.emptyErr'),'error');return}
   let data;
-  try{data=JSON.parse(raw)}catch(e){showToast(window.t('home.jsonErr'),'error');return}
-  if(!Array.isArray(data)||!data.length||!data[0].title||!Array.isArray(data[0].choices)||data[0].correctIndex===undefined){
-    showToast(window.t('home.jsonErr'),'error');return
+  // Auto-detect: try JSON first, fall back to simple text parser
+  const looksLikeJson = raw.trimStart().startsWith('[') || raw.trimStart().startsWith('{');
+  if(looksLikeJson){
+    try{data=JSON.parse(raw)}catch(e){
+      // Might be text that starts with [ — try text parser
+      data=parseSimpleText(raw);
+      if(!data.length){showToast(window.t('home.jsonErr'),'error');return}
+    }
+    if(!Array.isArray(data)||!data.length||!data[0].title||!Array.isArray(data[0].choices)||data[0].correctIndex===undefined){
+      showToast(window.t('home.jsonErr'),'error');return
+    }
+  } else {
+    data=parseSimpleText(raw);
+    if(!data.length){showToast(window.t('home.textErrQ'),'error');return}
   }
   State.original=data;
   State.questions=shuffleArray(data).map(q=>{
