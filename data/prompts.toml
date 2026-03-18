@@ -24,7 +24,7 @@ Regras obrigatórias:
 - "choices": array de EXATAMENTE 4 alternativas, neste formato:
   ["A) ...", "B) ...", "C) ...", "D) ..."]
 - "correctIndex": inteiro de 0 a 3.
-- "explanation": explicação longa, técnica, completa, com raciocínio clínico, justificando a correta e refutando as incorretas.
+- "explanation": explicação longa, técnica, completa, com raciocínio clínico, justificando a correta e refutando as incorretas. IMPORTANTE: não mencione a letra da alternativa correta na explicação (ex: não escreva "A alternativa B está correta" ou "A opção C é a correta"). Explique o raciocínio clínico diretamente, sem referenciar letras.
 - As alternativas devem ser plausíveis e com distratores fortes.
 - Não escreva introdução, conclusão ou comentários fora do JSON.
 
@@ -58,7 +58,7 @@ Regras obrigatórias:
 - EXATAMENTE 4 alternativas por questão (A, B, C, D).
 - As alternativas devem ser plausíveis e com distratores fortes.
 - A linha "Correta:" deve conter APENAS a letra da resposta correta (ex: Correta: C).
-- A linha "Explicação:" deve conter explicação longa, técnica e completa.
+- A linha "Explicação:" deve conter explicação longa, técnica e completa. IMPORTANTE: não mencione a letra da alternativa correta na explicação (ex: não escreva "A alternativa B está correta" ou "A opção C é a correta"). Explique o raciocínio clínico diretamente, sem referenciar letras.
 - Separe cada questão com uma linha em branco.
 - Não escreva introdução, conclusão ou comentários.
 
@@ -94,7 +94,7 @@ Mandatory rules:
 - "choices": array of EXACTLY 4 answer choices:
   ["A) ...", "B) ...", "C) ...", "D) ..."]
 - "correctIndex": integer from 0 to 3.
-- "explanation": long, technical explanation — justify correct answer and explicitly refute each wrong answer. Reference pathophysiology and current guidelines.
+- "explanation": long, technical explanation — justify correct answer and explicitly refute each wrong answer. Reference pathophysiology and current guidelines. IMPORTANT: do not mention the letter of the correct answer in the explanation (e.g. do not write "Option B is correct" or "Answer C is the best choice"). Explain the clinical reasoning directly without referencing letters.
 - Distractors must reflect common USMLE traps.
 - Do not write any introduction, conclusion, or comments outside the JSON.
 
@@ -129,7 +129,7 @@ Mandatory rules:
 - EXACTLY 4 answer choices per question (A, B, C, D).
 - Distractors must reflect common USMLE traps.
 - The "Correct:" line must contain ONLY the letter (e.g. Correct: C).
-- The "Explanation:" line must be long, technical, and complete.
+- The "Explanation:" line must be long, technical, and complete. IMPORTANT: do not mention the letter of the correct answer in the explanation (e.g. do not write "Option B is correct" or "Answer C is the best choice"). Explain the clinical reasoning directly without referencing letters.
 - Separate questions with a blank line.
 - Do not write any introduction, conclusion, or comments.
 

@@ -165,7 +165,13 @@ function handleAnswer(idx){
   st.innerHTML=isOk
     ?`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>${window.t('quiz.correct')}`
     :`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>${window.t('quiz.wrong')}`;
-  fb.querySelector('.feedback-text').textContent=q.explanation||'';
+  var letters=['A','B','C','D','E'];
+  var correctLetter = letters[q.correctIndex] || '';
+  var isEn = window.MQ_LANG === 'en';
+  var prefix = isEn
+    ? '✓ Correct answer: ' + correctLetter + '\n\n'
+    : '✓ Resposta correta: ' + correctLetter + '\n\n';
+  fb.querySelector('.feedback-text').textContent = prefix + (q.explanation||'');
   fb.classList.remove('hidden');
   document.getElementById('next-btn').classList.remove('hidden');
   saveSession();
