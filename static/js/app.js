@@ -601,23 +601,31 @@ function checkResumeBanner() {
       });
     }, { passive: true });
   }
-  // Mouse drag support for desktop
-  var isDragging = false, dragStartX = 0, dragScrollLeft = 0;
-  track.addEventListener('mousedown', function(e) {
-    isDragging = true; dragStartX = e.pageX - track.offsetLeft;
-    dragScrollLeft = track.scrollLeft; track.style.cursor = 'grabbing';
-  });
-  track.addEventListener('mouseleave', function() { isDragging = false; track.style.cursor = ''; });
-  track.addEventListener('mouseup', function() {
-    isDragging = false; track.style.cursor = '';
-    var i = Math.round(track.scrollLeft / track.clientWidth);
-    track.scrollTo({ left: track.clientWidth * i, behavior: 'smooth' });
-  });
-  track.addEventListener('mousemove', function(e) {
-    if (!isDragging) return;
-    e.preventDefault();
-    track.scrollLeft = dragScrollLeft - (e.pageX - track.offsetLeft - dragStartX) * 1.5;
-  });
+  // Desktop arrow buttons
+  var btnPrev = document.getElementById('carousel-prev');
+  var btnNext = document.getElementById('carousel-next');
+  if (btnPrev && btnNext && sessions.length > 1) {
+    btnPrev.classList.remove('hidden');
+    btnNext.classList.remove('hidden');
+    function updateArrows() {
+      var i = Math.round(track.scrollLeft / track.clientWidth);
+      btnPrev.disabled = (i === 0);
+      btnNext.disabled = (i === sessions.length - 1);
+    }
+    updateArrows();
+    track.addEventListener('scroll', updateArrows, { passive: true });
+    btnPrev.onclick = function() {
+      var i = Math.round(track.scrollLeft / track.clientWidth);
+      track.scrollTo({ left: track.clientWidth * Math.max(0, i - 1), behavior: 'smooth' });
+    };
+    btnNext.onclick = function() {
+      var i = Math.round(track.scrollLeft / track.clientWidth);
+      track.scrollTo({ left: track.clientWidth * Math.min(sessions.length - 1, i + 1), behavior: 'smooth' });
+    };
+  } else if (btnPrev && btnNext) {
+    btnPrev.classList.add('hidden');
+    btnNext.classList.add('hidden');
+  }
   banner.classList.remove('hidden');
 }
 }

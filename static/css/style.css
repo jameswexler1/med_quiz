@@ -494,3 +494,30 @@ h3{font-size:1.05rem;font-weight:600}
   gap: 8px;
   align-items: center;
 }
+
+/* ── CAROUSEL ARROWS (desktop only) ──────────────────── */
+.resume-carousel-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.carousel-arrow {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-sm);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all .2s var(--ease);
+}
+.carousel-arrow:hover { background: var(--bg-hover); border-color: var(--accent); color: var(--accent); }
+.carousel-arrow:disabled { opacity: .3; cursor: default; }
+/* Hide arrows on touch devices */
+@media (hover: none) {
+  .carousel-arrow { display: none !important; }
+}
