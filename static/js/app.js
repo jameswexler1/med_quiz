@@ -26,6 +26,8 @@ function bindEvents(){
   document.getElementById('file-input')?.addEventListener('change',handleFileUpload);
   document.getElementById('quiz-back')?.addEventListener('click',()=>{if(confirm(window.t('quiz.exitMsg'))){clearSession();showScreen('screen-home')}});
   document.getElementById('next-btn')?.addEventListener('click',nextQuestion);
+  document.getElementById('prev-btn')?.addEventListener('click',prevQuestion);
+  document.getElementById('next-arrow-btn')?.addEventListener('click',nextQuestionArrow);
   document.getElementById('save-btn')?.addEventListener('click',()=>saveResult());
   document.getElementById('final-new-btn')?.addEventListener('click',()=>showScreen('screen-home'));
   document.getElementById('share-btn')?.addEventListener('click',openShareModal);
@@ -141,10 +143,42 @@ function renderQuestion(){
     btn.addEventListener('click',()=>handleAnswer(i));
     container.appendChild(btn);
   });
-  document.getElementById('feedback-card').className='card feedback-card hidden';
+  const fb2=document.getElementById('feedback-card');
   const nb=document.getElementById('next-btn');
-  nb.classList.add('hidden');
-  nb.querySelector('[data-i18n]').textContent=n===total?window.t('quiz.finish'):window.t('quiz.next');
+  // If this question was already answered, restore its state
+  const ans=State.answers[State.current];
+  if(ans!==undefined){
+    // Restore choice highlighting
+    document.querySelectorAll('.choice-btn').forEach((btn,i)=>{
+      btn.disabled=true;
+      if(i===State.questions[State.current].correctIndex)btn.classList.add('correct');
+      if(i===ans.idx&&!ans.correct)btn.classList.add('incorrect');
+    });
+    // Restore feedback
+    var letters2=['A','B','C','D','E'];
+    var correctLetter2=letters2[State.questions[State.current].correctIndex]||'';
+    var isEn2=window.MQ_LANG==='en';
+    var prefix2=isEn2?'✓ Correct answer: '+correctLetter2+'
+
+':'✓ Resposta correta: '+correctLetter2+'
+
+';
+    fb2.className='card feedback-card '+(ans.correct?'correct-fb':'incorrect-fb');
+    var st2=fb2.querySelector('.feedback-status');
+    st2.className='feedback-status '+(ans.correct?'correct-status':'incorrect-status');
+    st2.innerHTML=ans.correct
+      ?'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>'+window.t('quiz.correct')
+      :'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'+window.t('quiz.wrong');
+    fb2.querySelector('.feedback-text').textContent=prefix2+(State.questions[State.current].explanation||'');
+    fb2.classList.remove('hidden');
+    nb.classList.remove('hidden');
+    nb.querySelector('[data-i18n]').textContent=n===total?window.t('quiz.finish'):window.t('quiz.next');
+  } else {
+    fb2.className='card feedback-card hidden';
+    nb.classList.add('hidden');
+    nb.querySelector('[data-i18n]').textContent=n===total?window.t('quiz.finish'):window.t('quiz.next');
+  }
+  updateNavArrows();
 }
 
 /* ANSWER */
@@ -174,6 +208,7 @@ function handleAnswer(idx){
   fb.querySelector('.feedback-text').textContent = prefix + (q.explanation||'');
   fb.classList.remove('hidden');
   document.getElementById('next-btn').classList.remove('hidden');
+  updateNavArrows();
   saveSession();
 }
 
@@ -407,6 +442,7 @@ function resumeSession(session) {
   State.redoName  = session.redoName || null;
   showScreen('screen-quiz');
   renderQuestion();
+  updateNavArrows();
 }
 
 function checkResumeBanner() {
@@ -797,4 +833,33 @@ async function renameHistoryItem(historyIdx) {
   }
   renderHistory();
   showToast(isEn ? 'Renamed' : 'Renomeado', 'success');
+}
+
+/* ── QUESTION NAVIGATION ────────────────────────────────── */
+function updateNavArrows() {
+  var prev = document.getElementById('prev-btn');
+  var next = document.getElementById('next-arrow-btn');
+  if (!prev || !next) return;
+  // Prev: enabled if not on first question
+  prev.disabled = State.current === 0;
+  // Next arrow: enabled if current question answered AND not on last question
+  var answered = State.answers[State.current] !== undefined;
+  var isLast   = State.current === State.questions.length - 1;
+  next.disabled = !answered || isLast;
+}
+
+function prevQuestion() {
+  if (State.current === 0) return;
+  State.current--;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function nextQuestionArrow() {
+  // Only allowed if current question is answered
+  if (State.answers[State.current] === undefined) return;
+  if (State.current >= State.questions.length - 1) return;
+  State.current++;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
