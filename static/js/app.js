@@ -282,8 +282,46 @@ function getHistory(){try{return JSON.parse(localStorage.getItem('mq_history')||
 function renderHistory(){
   const history=getHistory(),list=document.getElementById('history-list');
   if(!list)return;list.innerHTML='';
+
+  // Show in-progress session at top if exists
+  const session = loadSession();
+  if (session && session.shuffled && session.shuffled.length) {
+    const isEn   = window.MQ_LANG === 'en';
+    const done   = session.current;
+    const total  = session.shuffled.length;
+    const pct    = Math.round((done / total) * 100);
+    const inProg = document.createElement('div');
+    inProg.className = 'history-item session-in-progress';
+    inProg.innerHTML =
+      '<div class="history-item-info">' +
+        '<div class="history-item-name">' +
+          '<span class="session-badge">' + (isEn ? '⏸ In progress' : '⏸ Em andamento') + '</span>' +
+        '</div>' +
+        '<div class="history-item-date">' +
+          (isEn ? 'Question ' + (done+1) + ' of ' + total : 'Questão ' + (done+1) + ' de ' + total) +
+          ' &nbsp;·&nbsp; ' + session.score + (isEn ? ' correct' : ' acerto(s)') +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;align-items:center;flex-shrink:0">' +
+        '<div style="text-align:right">' +
+          '<div style="font-size:1rem;font-weight:700;color:var(--accent)">' + pct + '%</div>' +
+          '<div style="font-size:.75rem;color:var(--text-3)">' + done + '/' + total + '</div>' +
+        '</div>' +
+        '<button class="btn btn-primary btn-sm" id="history-resume-btn">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5,3 19,12 5,21"/></svg>' +
+          (isEn ? 'Resume' : 'Continuar') +
+        '</button>' +
+      '</div>';
+    list.appendChild(inProg);
+    document.getElementById('history-resume-btn').onclick = function() {
+      resumeSession(session);
+    };
+  }
+
   if(!history.length){
-    list.innerHTML=`<div class="history-empty">${window.t('history.empty')}</div>`;
+    if (!session || !session.shuffled) {
+      list.innerHTML += '<div class="history-empty">' + window.t('history.empty') + '</div>';
+    }
     if(chartHistory){chartHistory.destroy();chartHistory=null}
     document.getElementById('history-chart-wrap')?.classList.add('hidden');return;
   }
@@ -419,6 +457,9 @@ function saveSession() {
 
 function clearSession() {
   localStorage.removeItem('mq_session');
+  if (typeof clearRemoteSession === 'function') {
+    clearRemoteSession();
+  }
 }
 
 function loadSession() {
@@ -859,3 +900,20 @@ function nextQuestionArrow() {
   renderQuestion();
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
+
+/* ── SYNC SESSION ON PAGE HIDE ──────────────────────────── */
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'hidden') {
+    var session = loadSession();
+    if (session && typeof pushSession === 'function') {
+      pushSession(session);
+    }
+  }
+});
+
+window.addEventListener('beforeunload', function() {
+  var session = loadSession();
+  if (session && typeof pushSession === 'function') {
+    pushSession(session);
+  }
+});

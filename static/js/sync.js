@@ -183,8 +183,26 @@ document.addEventListener('DOMContentLoaded', () => {
   updateSyncUI();
 
   if (Sync.isLoggedIn()) {
-    // Already logged in — pull silently
+    // Already logged in — pull history silently
     Sync.pull().then(updateSyncUI).catch(console.warn);
+    // Also check for remote in-progress session
+    setTimeout(function() {
+      if (typeof pullSession === 'function') {
+        pullSession().then(function(remote) {
+          if (!remote) return;
+          var localRaw = localStorage.getItem('mq_session');
+          var local = localRaw ? JSON.parse(localRaw) : null;
+          if (!local || !local.savedAt || remote.savedAt > local.savedAt) {
+            localStorage.setItem('mq_session', JSON.stringify(remote));
+            if (typeof checkResumeBanner === 'function') checkResumeBanner();
+            if (typeof renderHistory === 'function') {
+              var hs = document.getElementById('screen-history');
+              if (hs && hs.classList.contains('active')) renderHistory();
+            }
+          }
+        }).catch(console.warn);
+      }
+    }, 500);
   } else if (!localStorage.getItem('mq_sync_dismissed')) {
     // First visit and never dismissed — show after short delay
     setTimeout(openSyncModal, 900);
@@ -237,3 +255,60 @@ async function loadSharedQuiz(id) {
 
 window.shareQuiz     = shareQuiz;
 window.loadSharedQuiz = loadSharedQuiz;
+
+/* ── SESSION SYNC ───────────────────────────────────────── */
+const SESSION_REST = SUPA_URL + '/rest/v1/sessions';
+
+async function pushSession(sessionData) {
+  if (!Sync.isLoggedIn()) return;
+  try {
+    await fetch(SESSION_REST, {
+      method: 'POST',
+      headers: {
+        'apikey':        SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type':  'application/json',
+        'Prefer':        'resolution=merge-duplicates,return=minimal',
+      },
+      body: JSON.stringify({
+        username:   Sync.username,
+        session:    sessionData,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+  } catch(e) { console.warn('Session push failed', e); }
+}
+
+async function pullSession() {
+  if (!Sync.isLoggedIn()) return null;
+  try {
+    const res = await fetch(
+      SESSION_REST + '?username=eq.' + encodeURIComponent(Sync.username) + '&select=session,updated_at',
+      { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY } }
+    );
+    if (!res.ok) return null;
+    const rows = await res.json();
+    if (!rows.length || !rows[0].session || !rows[0].session.shuffled) return null;
+    return rows[0].session;
+  } catch(e) { console.warn('Session pull failed', e); return null; }
+}
+
+async function clearRemoteSession() {
+  if (!Sync.isLoggedIn()) return;
+  try {
+    await fetch(SESSION_REST + '?username=eq.' + encodeURIComponent(Sync.username), {
+      method:  'PATCH',
+      headers: {
+        'apikey':        SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type':  'application/json',
+        'Prefer':        'return=minimal',
+      },
+      body: JSON.stringify({ session: {}, updated_at: new Date().toISOString() }),
+    });
+  } catch(e) { console.warn('Session clear failed', e); }
+}
+
+window.pushSession      = pushSession;
+window.pullSession      = pullSession;
+window.clearRemoteSession = clearRemoteSession;
