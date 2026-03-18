@@ -405,13 +405,18 @@ h3{font-size:1.05rem;font-weight:600}
 .resume-carousel-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.resume-carousel-label {
   font-size: .8125rem;
   font-weight: 700;
   color: var(--text-2);
   text-transform: uppercase;
   letter-spacing: .06em;
-  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .resume-carousel-count {
   background: var(--accent);
@@ -421,34 +426,49 @@ h3{font-size:1.05rem;font-weight:600}
   padding: 1px 7px;
   border-radius: 99px;
 }
+.resume-carousel-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.resume-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 99px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  transition: all .25s var(--ease);
+  cursor: pointer;
+}
+.resume-dot.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  width: 18px;
+}
 .resume-carousel-track {
   display: flex;
-  gap: 12px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 6px;
   scrollbar-width: none;
+  scroll-behavior: smooth;
+  gap: 0;
 }
 .resume-carousel-track::-webkit-scrollbar { display: none; }
 .resume-card {
   flex-shrink: 0;
-  width: min(280px, calc(100vw - 64px));
-  scroll-snap-align: start;
+  width: 100%;
+  scroll-snap-align: center;
   background: var(--bg-surface);
   border: 1px solid var(--accent);
   border-radius: var(--r-lg);
-  padding: 16px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   box-shadow: var(--sh-sm), var(--accent-glow);
   animation: cardIn .38s var(--spring) both;
 }
-.resume-card:nth-child(2){animation-delay:60ms}
-.resume-card:nth-child(3){animation-delay:120ms}
-.resume-card:nth-child(4){animation-delay:180ms}
-.resume-card:nth-child(5){animation-delay:240ms}
 .resume-card-name {
   font-weight: 700;
   font-size: .9375rem;

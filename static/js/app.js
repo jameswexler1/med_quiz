@@ -473,9 +473,6 @@ function saveSession() {
   localStorage.setItem('mq_session', JSON.stringify(session));
   if (typeof upsertSession === 'function') upsertSession(session);
   if (typeof pushSession === 'function') pushSession(session).catch(console.warn);
-  if (typeof pushSession === 'function') {
-    pushSession(session).catch(console.warn);
-  }
 }
 
 function clearSession() {
@@ -551,40 +548,61 @@ function checkResumeBanner() {
   if (title) title.textContent = isEn ? 'Continue' : 'Continuar';
 
   if (track) {
-    track.innerHTML = '';
-    sessions.forEach(function(session) {
-      var done  = session.current || 0;
-      var total = (session.shuffled || []).length;
-      var pct   = total ? Math.round((done/total)*100) : 0;
-      var name  = session.quizName || (isEn ? 'Quiz' : 'Simulado');
-      var card  = document.createElement('div');
-      card.className = 'resume-card';
-      card.innerHTML =
-        '<div class="resume-card-name">' + esc(name) + '</div>' +
-        '<div class="resume-card-meta">' +
-          (isEn ? 'Q '+(done+1)+' of '+total : 'Q '+(done+1)+' de '+total) +
-          ' \u00b7 ' + session.score + (isEn ? ' correct' : ' acerto(s)') +
-        '</div>' +
-        '<div class="resume-card-progress">' +
-          '<div class="resume-card-progress-fill" style="width:'+pct+'%"></div>' +
-        '</div>' +
-        '<div class="resume-card-actions">' +
-          '<button class="btn btn-primary btn-sm" style="flex:1">' +
-            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5,3 19,12 5,21"/></svg>' +
-            (isEn ? 'Resume' : 'Continuar') +
-          '</button>' +
-          '<button class="btn btn-ghost btn-sm" style="color:var(--text-3);padding:7px 10px" title="'+(isEn?'Discard':'Descartar')+'">' +
-            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
-          '</button>' +
-        '</div>';
-      card.querySelectorAll('.btn')[0].addEventListener('click', function(){ resumeSession(session); });
-      card.querySelectorAll('.btn')[1].addEventListener('click', function(){
-        removeSession(session.sessionId); checkResumeBanner();
-      });
-      track.appendChild(card);
+    var dots = document.getElementById('resume-dots');
+  track.innerHTML = '';
+  if (dots) dots.innerHTML = '';
+  sessions.forEach(function(session, idx) {
+    var done  = session.current || 0;
+    var total = (session.shuffled || []).length;
+    var pct   = total ? Math.round((done/total)*100) : 0;
+    var name  = session.quizName || (isEn ? 'Quiz' : 'Simulado');
+    var card  = document.createElement('div');
+    card.className = 'resume-card';
+    card.innerHTML =
+      '<div class="resume-card-name">' + esc(name) + '</div>' +
+      '<div class="resume-card-meta">' +
+        (isEn ? 'Q '+(done+1)+' of '+total : 'Q '+(done+1)+' de '+total) +
+        ' · ' + session.score + (isEn ? ' correct' : ' acerto(s)') +
+      '</div>' +
+      '<div class="resume-card-progress">' +
+        '<div class="resume-card-progress-fill" style="width:'+pct+'%"></div>' +
+      '</div>' +
+      '<div class="resume-card-actions">' +
+        '<button class="btn btn-primary btn-sm" style="flex:1">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5,3 19,12 5,21"/></svg>' +
+          (isEn ? 'Resume' : 'Continuar') +
+        '</button>' +
+        '<button class="btn btn-ghost btn-sm" style="color:var(--text-3);padding:7px 10px" title="'+(isEn?'Discard':'Descartar')+'">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+        '</button>' +
+      '</div>';
+    card.querySelectorAll('.btn')[0].addEventListener('click', function(){ resumeSession(session); });
+    card.querySelectorAll('.btn')[1].addEventListener('click', function(){
+      removeSession(session.sessionId); checkResumeBanner();
     });
+    track.appendChild(card);
+    if (dots && sessions.length > 1) {
+      var dot = document.createElement('button');
+      dot.className = 'resume-dot' + (idx === 0 ? ' active' : '');
+      dot.setAttribute('aria-label', 'Session ' + (idx+1));
+      (function(i) {
+        dot.addEventListener('click', function() {
+          track.scrollTo({ left: track.clientWidth * i, behavior: 'smooth' });
+        });
+      })(idx);
+      dots.appendChild(dot);
+    }
+  });
+  if (sessions.length > 1) {
+    track.addEventListener('scroll', function() {
+      var i = Math.round(track.scrollLeft / track.clientWidth);
+      if (dots) dots.querySelectorAll('.resume-dot').forEach(function(d, j) {
+        d.classList.toggle('active', j === i);
+      });
+    }, { passive: true });
   }
   banner.classList.remove('hidden');
+}
 }
 
 function openShareModal() {
