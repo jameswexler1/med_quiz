@@ -456,6 +456,7 @@ h3{font-size:1.05rem;font-weight:600}
 }
 .resume-carousel-track::-webkit-scrollbar { display: none; }
 .resume-card {
+  width: 100%;
   flex-shrink: 0;
   width: 100%;
   scroll-snap-align: center;
@@ -496,11 +497,7 @@ h3{font-size:1.05rem;font-weight:600}
 }
 
 /* ── CAROUSEL WRAP ────────────────────────────────────── */
-.resume-carousel-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
+.resume-carousel-wrap { position:relative; display:flex; align-items:center; width:100%; }
 /* Hide arrows everywhere — not used anymore */
 .carousel-arrow { display: none !important; }
 
