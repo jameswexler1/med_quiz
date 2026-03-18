@@ -158,11 +158,7 @@ function renderQuestion(){
     var letters2=['A','B','C','D','E'];
     var correctLetter2=letters2[State.questions[State.current].correctIndex]||'';
     var isEn2=window.MQ_LANG==='en';
-    var prefix2=isEn2?'✓ Correct answer: '+correctLetter2+'
-
-':'✓ Resposta correta: '+correctLetter2+'
-
-';
+    var prefix2=isEn2?'\u2713 Correct answer: '+correctLetter2+'\n\n':'\u2713 Resposta correta: '+correctLetter2+'\n\n';
     fb2.className='card feedback-card '+(ans.correct?'correct-fb':'incorrect-fb');
     var st2=fb2.querySelector('.feedback-status');
     st2.className='feedback-status '+(ans.correct?'correct-status':'incorrect-status');
