@@ -75,12 +75,13 @@ function showScreen(id){
         Sync.pull().catch(()=>{}),
         typeof pullSession==='function' ? pullSession().then(function(remote){
           if(!remote) return;
-          var localRaw=localStorage.getItem('mq_session');
-          var local=localRaw?JSON.parse(localRaw):null;
-          if(!local||!local.savedAt||remote.savedAt>local.savedAt){
-            localStorage.setItem('mq_session',JSON.stringify(remote));
+          // Only update local session if NOT currently in an active quiz
+          var quizActive = document.getElementById('screen-quiz') &&
+            document.getElementById('screen-quiz').classList.contains('active');
+          if (!quizActive) {
+            localStorage.setItem('mq_session', JSON.stringify(remote));
           }
-        }).catch(()=>{}) : Promise.resolve()
+        }).catch(function(){}) : Promise.resolve()
       ]).then(()=>renderHistory()).catch(()=>renderHistory());
     } else {
       renderHistory();

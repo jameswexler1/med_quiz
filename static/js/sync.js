@@ -190,15 +190,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof pullSession === 'function') {
         pullSession().then(function(remote) {
           if (!remote) return;
-          var localRaw = localStorage.getItem('mq_session');
-          var local = localRaw ? JSON.parse(localRaw) : null;
-          if (!local || !local.savedAt || remote.savedAt > local.savedAt) {
-            localStorage.setItem('mq_session', JSON.stringify(remote));
-            if (typeof checkResumeBanner === 'function') checkResumeBanner();
-            if (typeof renderHistory === 'function') {
-              var hs = document.getElementById('screen-history');
-              if (hs && hs.classList.contains('active')) renderHistory();
-            }
+          // Always use remote on boot — not in a quiz yet
+          localStorage.setItem('mq_session', JSON.stringify(remote));
+          if (typeof checkResumeBanner === 'function') checkResumeBanner();
+          if (typeof renderHistory === 'function') {
+            var hs = document.getElementById('screen-history');
+            if (hs && hs.classList.contains('active')) renderHistory();
           }
         }).catch(console.warn);
       }
