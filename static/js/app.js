@@ -601,31 +601,6 @@ function checkResumeBanner() {
       });
     }, { passive: true });
   }
-  // Desktop arrow buttons
-  var btnPrev = document.getElementById('carousel-prev');
-  var btnNext = document.getElementById('carousel-next');
-  if (btnPrev && btnNext && sessions.length > 1) {
-    btnPrev.classList.remove('hidden');
-    btnNext.classList.remove('hidden');
-    function updateArrows() {
-      var i = Math.round(track.scrollLeft / track.clientWidth);
-      btnPrev.disabled = (i === 0);
-      btnNext.disabled = (i === sessions.length - 1);
-    }
-    updateArrows();
-    track.addEventListener('scroll', updateArrows, { passive: true });
-    btnPrev.onclick = function() {
-      var i = Math.round(track.scrollLeft / track.clientWidth);
-      track.scrollTo({ left: track.clientWidth * Math.max(0, i - 1), behavior: 'smooth' });
-    };
-    btnNext.onclick = function() {
-      var i = Math.round(track.scrollLeft / track.clientWidth);
-      track.scrollTo({ left: track.clientWidth * Math.min(sessions.length - 1, i + 1), behavior: 'smooth' });
-    };
-  } else if (btnPrev && btnNext) {
-    btnPrev.classList.add('hidden');
-    btnNext.classList.add('hidden');
-  }
   banner.classList.remove('hidden');
 }
 }
