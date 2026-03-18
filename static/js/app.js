@@ -242,7 +242,7 @@ function showFinal(){clearSession();
   else{cls='grade-poor';lbl='💪 '+window.t('final.poor')}
   badge.className=`grade-badge ${cls}`;badge.textContent=lbl;
   renderFinalChart();
-  document.getElementById('quiz-name-input').value='';
+  document.getElementById('quiz-name-input').value = State.quizName || '';
 }
 
 function renderFinalChart(){
@@ -294,41 +294,42 @@ function renderHistory(){
   const history=getHistory(),list=document.getElementById('history-list');
   if(!list)return;list.innerHTML='';
 
-  // Show in-progress session at top if exists
-  const session = loadSession();
-  if (session && session.shuffled && session.shuffled.length) {
-    const isEn   = window.MQ_LANG === 'en';
-    const done   = session.current;
-    const total  = session.shuffled.length;
-    const pct    = Math.round((done / total) * 100);
-    const inProg = document.createElement('div');
+  // Show all paused sessions at top
+  var activeSessions = typeof getSessions === 'function' ? getSessions().filter(function(s){
+    return s.savedAt && (Date.now() - s.savedAt < 7*24*60*60*1000) && s.sessionId;
+  }) : [];
+  activeSessions.forEach(function(session, si) {
+    var isEn  = window.MQ_LANG === 'en';
+    var done  = session.current || 0;
+    var total = (session.shuffled || []).length;
+    var pct   = total ? Math.round((done/total)*100) : 0;
+    var name  = session.quizName || (isEn ? 'Quiz '+(si+1) : 'Simulado '+(si+1));
+    var inProg = document.createElement('div');
     inProg.className = 'history-item session-in-progress';
+    inProg.style.animationDelay = (si*45)+'ms';
     inProg.innerHTML =
       '<div class="history-item-info">' +
-        '<div class="history-item-name">' +
-          '<span class="session-badge">' + (isEn ? '⏸ In progress' : '⏸ Em andamento') + '</span>' +
-        '</div>' +
+        '<div class="history-item-name"><span class="session-badge">⏸ ' + esc(name) + '</span></div>' +
         '<div class="history-item-date">' +
-          (isEn ? 'Question ' + (done+1) + ' of ' + total : 'Questão ' + (done+1) + ' de ' + total) +
-          ' &nbsp;·&nbsp; ' + session.score + (isEn ? ' correct' : ' acerto(s)') +
+          (isEn ? 'Q '+(done+1)+' of '+total : 'Q '+(done+1)+' de '+total) +
+          ' · ' + pct + '%' +
         '</div>' +
       '</div>' +
-      '<div style="display:flex;gap:8px;align-items:center;flex-shrink:0">' +
-        '<div style="text-align:right">' +
-          '<div style="font-size:1rem;font-weight:700;color:var(--accent)">' + pct + '%</div>' +
-          '<div style="font-size:.75rem;color:var(--text-3)">' + done + '/' + total + '</div>' +
-        '</div>' +
-        '<button class="btn btn-primary btn-sm" id="history-resume-btn">' +
+      '<div style="display:flex;gap:6px;flex-shrink:0">' +
+        '<button class="btn btn-primary btn-sm sess-res">' +
           '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5,3 19,12 5,21"/></svg>' +
-          (isEn ? 'Resume' : 'Continuar') +
+          (isEn?'Resume':'Continuar') +
+        '</button>' +
+        '<button class="btn btn-ghost btn-sm sess-dis" style="color:var(--text-3);padding:7px 10px">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
         '</button>' +
       '</div>';
+    inProg.querySelector('.sess-res').addEventListener('click', function(){ resumeSession(session); });
+    inProg.querySelector('.sess-dis').addEventListener('click', function(){
+      removeSession(session.sessionId); renderHistory(); checkResumeBanner();
+    });
     list.appendChild(inProg);
-    document.getElementById('history-resume-btn').onclick = function() {
-      resumeSession(session);
-    };
-  }
-
+  });
   if(!history.length){
     if (!session || !session.shuffled) {
       list.innerHTML += '<div class="history-empty">' + window.t('history.empty') + '</div>';
@@ -414,6 +415,8 @@ function redoQuiz(historyIdx) {
     );
     return;
   }
+  State.quizName  = entry.name || (window.MQ_LANG === 'en' ? 'Quiz' : 'Simulado');
+  State.sessionId = Date.now().toString(36) + Math.random().toString(36).slice(2,5);
   State.original=entry.questions;
   State.questions=shuffleArray(entry.questions).map(q=>{
     const correct=q.choices[q.correctIndex];
@@ -454,16 +457,20 @@ document.addEventListener('click', function(e) {
 /* ── SESSION PERSISTENCE ───────────────────────────────── */
 function saveSession() {
   const session = {
-    questions: State.original || State.questions,
-    shuffled:  State.questions,
-    current:   State.current,
-    score:     State.score,
-    answers:   State.answers,
-    redoId:    State.redoId   || null,
-    redoName:  State.redoName || null,
-    savedAt:   Date.now(),
+    questions:  State.original || State.questions,
+    shuffled:   State.questions,
+    current:    State.current,
+    score:      State.score,
+    answers:    State.answers,
+    redoId:     State.redoId    || null,
+    redoName:   State.redoName  || null,
+    quizName:   State.quizName  || '',
+    sessionId:  State.sessionId || '',
+    savedAt:    Date.now(),
   };
   localStorage.setItem('mq_session', JSON.stringify(session));
+  if (typeof upsertSession === 'function') upsertSession(session);
+  if (typeof pushSession === 'function') pushSession(session).catch(console.warn);
   if (typeof pushSession === 'function') {
     pushSession(session).catch(console.warn);
   }
@@ -471,6 +478,10 @@ function saveSession() {
 
 function clearSession() {
   localStorage.removeItem('mq_session');
+  if (State.sessionId && typeof removeSession === 'function') {
+    removeSession(State.sessionId);
+  }
+  State.sessionId = null;
   if (typeof clearRemoteSession === 'function') {
     clearRemoteSession();
   }
@@ -490,64 +501,90 @@ function resumeSession(session) {
   State.score     = session.score;
   State.answers   = session.answers || [];
   State.redoId    = session.redoId   || null;
-  State.redoName  = session.redoName || null;
+  State.redoName  = session.redoName  || null;
+  State.quizName  = session.quizName  || '';
+  State.sessionId = session.sessionId || '';
   showScreen('screen-quiz');
   renderQuestion();
   updateNavArrows();
 }
 
-function checkResumeBanner() {
-  const session = loadSession();
-  const banner  = document.getElementById('resume-banner');
-  if (!banner) return;
-
-  // Never show banner if quiz or final screen is active
-  const quizActive  = document.getElementById('screen-quiz')?.classList.contains('active');
-  const finalActive = document.getElementById('screen-final')?.classList.contains('active');
-  if (quizActive || finalActive) {
-    banner.classList.add('hidden');
-    return;
-  }
-
-  if (!session || !session.shuffled || !session.shuffled.length) {
-    banner.classList.add('hidden');
-    return;
-  }
-
-  // Don't show if session is older than 7 days
-  if (Date.now() - session.savedAt > 7 * 24 * 60 * 60 * 1000) {
-    clearSession();
-    banner.classList.add('hidden');
-    return;
-  }
-
-  const done  = session.current;
-  const total = session.shuffled.length;
-  const isEn  = window.MQ_LANG === 'en';
-
-  document.getElementById('resume-title').textContent =
-    isEn ? 'Resume quiz' : 'Continuar simulado';
-  document.getElementById('resume-meta').textContent =
-    isEn
-      ? 'Question ' + (done+1) + ' of ' + total + ' — ' + session.score + ' correct so far'
-      : 'Questão ' + (done+1) + ' de ' + total + ' — ' + session.score + ' acerto(s) até agora';
-  document.getElementById('resume-btn-label').textContent =
-    isEn ? 'Resume' : 'Continuar';
-
-  banner.classList.remove('hidden');
-
-  document.getElementById('resume-btn').onclick = () => {
-    banner.classList.add('hidden');
-    resumeSession(session);
-  };
-
-  document.getElementById('resume-discard-btn').onclick = () => {
-    clearSession();
-    banner.classList.add('hidden');
-  };
+function getSessions() {
+  try { return JSON.parse(localStorage.getItem('mq_sessions') || '[]'); } catch(e) { return []; }
+}
+function saveSessions(sessions) {
+  localStorage.setItem('mq_sessions', JSON.stringify(sessions));
+}
+function upsertSession(session) {
+  if (!session || !session.sessionId) return;
+  var sessions = getSessions();
+  var idx = sessions.findIndex(function(s){ return s.sessionId === session.sessionId; });
+  if (idx >= 0) sessions[idx] = session;
+  else sessions.unshift(session);
+  if (sessions.length > 5) sessions = sessions.slice(0, 5);
+  saveSessions(sessions);
+}
+function removeSession(sessionId) {
+  saveSessions(getSessions().filter(function(s){ return s.sessionId !== sessionId; }));
 }
 
-/* ── SHARE UI ───────────────────────────────────────────── */
+function checkResumeBanner() {
+  var banner = document.getElementById('resume-banner');
+  if (!banner) return;
+  var quizActive  = document.getElementById('screen-quiz') && document.getElementById('screen-quiz').classList.contains('active');
+  var finalActive = document.getElementById('screen-final') && document.getElementById('screen-final').classList.contains('active');
+  if (quizActive || finalActive) { banner.classList.add('hidden'); return; }
+
+  var sessions = getSessions().filter(function(s){
+    return s.savedAt && (Date.now() - s.savedAt < 7*24*60*60*1000);
+  });
+  saveSessions(sessions);
+  if (!sessions.length) { banner.classList.add('hidden'); return; }
+
+  var isEn  = window.MQ_LANG === 'en';
+  var count = document.getElementById('resume-count');
+  var track = document.getElementById('resume-carousel-track');
+  var title = document.getElementById('resume-title');
+  if (count) count.textContent = sessions.length;
+  if (title) title.textContent = isEn ? 'Continue' : 'Continuar';
+
+  if (track) {
+    track.innerHTML = '';
+    sessions.forEach(function(session) {
+      var done  = session.current || 0;
+      var total = (session.shuffled || []).length;
+      var pct   = total ? Math.round((done/total)*100) : 0;
+      var name  = session.quizName || (isEn ? 'Quiz' : 'Simulado');
+      var card  = document.createElement('div');
+      card.className = 'resume-card';
+      card.innerHTML =
+        '<div class="resume-card-name">' + esc(name) + '</div>' +
+        '<div class="resume-card-meta">' +
+          (isEn ? 'Q '+(done+1)+' of '+total : 'Q '+(done+1)+' de '+total) +
+          ' \u00b7 ' + session.score + (isEn ? ' correct' : ' acerto(s)') +
+        '</div>' +
+        '<div class="resume-card-progress">' +
+          '<div class="resume-card-progress-fill" style="width:'+pct+'%"></div>' +
+        '</div>' +
+        '<div class="resume-card-actions">' +
+          '<button class="btn btn-primary btn-sm" style="flex:1">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5,3 19,12 5,21"/></svg>' +
+            (isEn ? 'Resume' : 'Continuar') +
+          '</button>' +
+          '<button class="btn btn-ghost btn-sm" style="color:var(--text-3);padding:7px 10px" title="'+(isEn?'Discard':'Descartar')+'">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+          '</button>' +
+        '</div>';
+      card.querySelectorAll('.btn')[0].addEventListener('click', function(){ resumeSession(session); });
+      card.querySelectorAll('.btn')[1].addEventListener('click', function(){
+        removeSession(session.sessionId); checkResumeBanner();
+      });
+      track.appendChild(card);
+    });
+  }
+  banner.classList.remove('hidden');
+}
+
 function openShareModal() {
   const isEn = window.MQ_LANG === 'en';
   document.getElementById('share-modal-title').textContent =
@@ -849,6 +886,10 @@ function loadFromText() {
   var data;
   try { data = parseSimpleText(raw); } catch(e) { showToast(window.t('home.textErr'), 'error'); return; }
   if (!data.length) { showToast(window.t('home.textErrQ'), 'error'); return; }
+  var preName  = (document.getElementById('quiz-name-pre') ? document.getElementById('quiz-name-pre').value : '').trim();
+  var locale2  = window.MQ_LANG === 'pt' ? 'pt-BR' : 'en-US';
+  State.quizName  = preName || (window.MQ_LANG === 'en' ? 'Quiz ' : 'Simulado ') + new Date().toLocaleDateString(locale2);
+  State.sessionId = Date.now().toString(36) + Math.random().toString(36).slice(2,5);
   State.original  = data;
   State.questions = shuffleArray(data).map(function(q) {
     var correct  = q.choices[q.correctIndex];

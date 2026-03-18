@@ -259,6 +259,8 @@ const SESSION_REST = SUPA_URL + '/rest/v1/sessions';
 async function pushSession(sessionData) {
   if (!Sync.isLoggedIn()) return;
   try {
+    var allSessions = [];
+    try { allSessions = JSON.parse(localStorage.getItem('mq_sessions') || '[]'); } catch(e) {}
     await fetch(SESSION_REST, {
       method: 'POST',
       headers: {
@@ -267,6 +269,14 @@ async function pushSession(sessionData) {
         'Content-Type':  'application/json',
         'Prefer':        'resolution=merge-duplicates,return=minimal',
       },
+      body: JSON.stringify({
+        username:   Sync.username,
+        session:    { sessions: allSessions, updatedAt: Date.now() },
+        updated_at: new Date().toISOString(),
+      }),
+    });
+  } catch(e) { console.warn('Session push failed', e); }
+},
       body: JSON.stringify({
         username:   Sync.username,
         session:    sessionData,
@@ -282,6 +292,19 @@ async function pullSession() {
     const res = await fetch(
       SESSION_REST + '?username=eq.' + encodeURIComponent(Sync.username) + '&select=session,updated_at',
       { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY } }
+    );
+    if (!res.ok) return null;
+    const rows = await res.json();
+    if (!rows.length || !rows[0].session) return null;
+    const data = rows[0].session;
+    if (data.sessions) {
+      localStorage.setItem('mq_sessions', JSON.stringify(data.sessions));
+      if (typeof checkResumeBanner === 'function') checkResumeBanner();
+      return data.sessions[0] || null;
+    }
+    return data.shuffled ? data : null;
+  } catch(e) { console.warn('Session pull failed', e); return null; }
+} }
     );
     if (!res.ok) return null;
     const rows = await res.json();
