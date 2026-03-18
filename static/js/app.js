@@ -69,9 +69,19 @@ function showScreen(id){
   }
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='screen-history'){
-    // Pull latest from Supabase before rendering history
     if(typeof Sync!=='undefined'&&Sync.isLoggedIn()){
-      Sync.pull().then(()=>renderHistory()).catch(()=>renderHistory());
+      // Pull history AND session in parallel
+      Promise.all([
+        Sync.pull().catch(()=>{}),
+        typeof pullSession==='function' ? pullSession().then(function(remote){
+          if(!remote) return;
+          var localRaw=localStorage.getItem('mq_session');
+          var local=localRaw?JSON.parse(localRaw):null;
+          if(!local||!local.savedAt||remote.savedAt>local.savedAt){
+            localStorage.setItem('mq_session',JSON.stringify(remote));
+          }
+        }).catch(()=>{}) : Promise.resolve()
+      ]).then(()=>renderHistory()).catch(()=>renderHistory());
     } else {
       renderHistory();
     }
@@ -453,6 +463,9 @@ function saveSession() {
     savedAt:   Date.now(),
   };
   localStorage.setItem('mq_session', JSON.stringify(session));
+  if (typeof pushSession === 'function') {
+    pushSession(session).catch(console.warn);
+  }
 }
 
 function clearSession() {
@@ -905,15 +918,17 @@ function nextQuestionArrow() {
 document.addEventListener('visibilitychange', function() {
   if (document.visibilityState === 'hidden') {
     var session = loadSession();
-    if (session && typeof pushSession === 'function') {
-      pushSession(session);
+    if (!session || typeof SUPA_URL === 'undefined') return;
+    // Use sendBeacon for guaranteed delivery on page hide
+    var url = SUPA_URL + '/rest/v1/sessions';
+    var payload = JSON.stringify({
+      username:   typeof Sync !== 'undefined' && Sync.username ? Sync.username : null,
+      session:    session,
+      updated_at: new Date().toISOString(),
+    });
+    if (typeof Sync !== 'undefined' && Sync.isLoggedIn() && navigator.sendBeacon) {
+      var blob = new Blob([payload], {type: 'application/json'});
+      navigator.sendBeacon(url, blob);
     }
-  }
-});
-
-window.addEventListener('beforeunload', function() {
-  var session = loadSession();
-  if (session && typeof pushSession === 'function') {
-    pushSession(session);
   }
 });
