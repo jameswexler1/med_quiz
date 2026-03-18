@@ -509,3 +509,9 @@ h3{font-size:1.05rem;font-weight:600}
   .resume-carousel-dots { display: none; }
   .resume-carousel-count { display: none; }
 }
+
+/* ── CAROUSEL WIDTH FIX ───────────────────────────────── */
+#resume-banner { width: 100%; }
+.resume-carousel-wrap { width: 100% !important; display: block !important; }
+.resume-carousel-track { width: 100% !important; }
+.resume-card { width: 100% !important; box-sizing: border-box; }
