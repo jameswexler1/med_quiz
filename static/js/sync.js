@@ -276,14 +276,6 @@ async function pushSession(sessionData) {
       }),
     });
   } catch(e) { console.warn('Session push failed', e); }
-},
-      body: JSON.stringify({
-        username:   Sync.username,
-        session:    sessionData,
-        updated_at: new Date().toISOString(),
-      }),
-    });
-  } catch(e) { console.warn('Session push failed', e); }
 }
 
 async function pullSession() {
@@ -303,13 +295,6 @@ async function pullSession() {
       return data.sessions[0] || null;
     }
     return data.shuffled ? data : null;
-  } catch(e) { console.warn('Session pull failed', e); return null; }
-} }
-    );
-    if (!res.ok) return null;
-    const rows = await res.json();
-    if (!rows.length || !rows[0].session || !rows[0].session.shuffled) return null;
-    return rows[0].session;
   } catch(e) { console.warn('Session pull failed', e); return null; }
 }
 

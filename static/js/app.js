@@ -330,10 +330,12 @@ function renderHistory(){
     });
     list.appendChild(inProg);
   });
+  if(!history.length && !activeSessions.length){
+    list.innerHTML += '<div class="history-empty">' + window.t('history.empty') + '</div>';
+    if(chartHistory){chartHistory.destroy();chartHistory=null}
+    document.getElementById('history-chart-wrap')?.classList.add('hidden');return;
+  }
   if(!history.length){
-    if (!session || !session.shuffled) {
-      list.innerHTML += '<div class="history-empty">' + window.t('history.empty') + '</div>';
-    }
     if(chartHistory){chartHistory.destroy();chartHistory=null}
     document.getElementById('history-chart-wrap')?.classList.add('hidden');return;
   }
